@@ -33,6 +33,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { AuthProvider } from "@/lib/AuthContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -41,12 +43,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${geist.variable}`}>
       <body>
-        {/* Fixed animated background — persists across all route changes */}
-        <PixelBlastBackground />
-        {/* All page content sits above the animation */}
-        <div style={{ position: "relative", zIndex: 1, minHeight: "100dvh" }}>
-          {children}
-        </div>
+        <AuthProvider>
+          {/* Fixed animated background — persists across all route changes */}
+          <PixelBlastBackground />
+          {/* All page content sits above the animation */}
+          <div style={{ position: "relative", zIndex: 1, minHeight: "100dvh" }}>
+            {children}
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

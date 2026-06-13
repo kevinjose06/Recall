@@ -1,11 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
-import { STATIC_AUTH_COOKIE, isStaticAuthSession } from "@/lib/auth/static";
+import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * Auth proxy (formerly middleware).
- * Renamed from middleware.ts per Next.js 16 — see proxy.md docs.
- *
  * Protected routes:  /dashboard/*, /events/*
  * Auth redirect:     /login — bounce away if already authenticated
  * Public routes:     /respond/*, /api/*, everything else
@@ -13,13 +9,9 @@ import { STATIC_AUTH_COOKIE, isStaticAuthSession } from "@/lib/auth/static";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Always refresh the session to keep cookies alive.
-  const { supabaseResponse, user } = await updateSession(request);
-
-  const hasStaticSession = isStaticAuthSession(
-    request.cookies.get(STATIC_AUTH_COOKIE)?.value
-  );
-  const isAuthenticated = !!user || hasStaticSession;
+  // Firebase auth sets a __session cookie when we login
+  const sessionCookie = request.cookies.get("__session")?.value;
+  const isAuthenticated = !!sessionCookie;
 
   // ── Protect member portal ──
   const isProtected =
@@ -39,17 +31,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(dashboardUrl);
   }
 
-  return supabaseResponse;
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths EXCEPT:
-     * - _next/static (static files)
-     * - _next/image  (image optimization)
-     * - favicon.ico and public assets
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf)$).*)",
   ],
 };

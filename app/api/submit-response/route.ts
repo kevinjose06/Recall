@@ -1,19 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { adminDb } from "@/lib/firebase-admin";
 import type { SubmitResponsePayload } from "@/lib/types";
 
-/**
- * POST /api/submit-response
- *
- * Validates a participant form submission and writes to the DB using
- * the Supabase service role key (bypasses RLS — participants aren't authenticated).
- *
- * Returns:
- *   200 — success
- *   400 — invalid payload
- *   409 — duplicate submission (respondent_token already used for this event)
- *   500 — server error
- */
 export async function POST(request: NextRequest) {
   let body: SubmitResponsePayload;
 
@@ -23,7 +11,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  // ── Validate payload structure ──────────────────────────────
   const { event_id, respondent_token, answers } = body;
 
   if (!event_id || typeof event_id !== "string") {
@@ -45,60 +32,48 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const supabase = await createServiceClient();
+  try {
+    // ── Check for duplicate submission ─────────────────────────
+    const responsesRef = adminDb.collection("events").doc(event_id).collection("responses");
+    const existingSnap = await responsesRef.where("respondent_token", "==", respondent_token).limit(1).get();
+    
+    if (!existingSnap.empty) {
+      return NextResponse.json(
+        { error: "You have already submitted feedback for this event." },
+        { status: 409 }
+      );
+    }
 
-  // ── Check for duplicate submission ─────────────────────────
-  const { count: existingCount } = await supabase
-    .from("responses")
-    .select("*", { count: "exact", head: true })
-    .eq("event_id", event_id)
-    .eq("respondent_token", respondent_token);
+    // ── Verify event exists ────────────────────────────────────
+    const eventSnap = await adminDb.collection("events").doc(event_id).get();
+    if (!eventSnap.exists) {
+      return NextResponse.json({ error: "Event not found." }, { status: 400 });
+    }
 
-  if ((existingCount ?? 0) > 0) {
-    return NextResponse.json(
-      { error: "You have already submitted feedback for this event." },
-      { status: 409 }
-    );
-  }
+    // ── Insert response & answers in batch ──────────────────────
+    const batch = adminDb.batch();
+    const newResponseRef = responsesRef.doc();
 
-  // ── Verify event exists ────────────────────────────────────
-  const { data: event } = await supabase
-    .from("events")
-    .select("id")
-    .eq("id", event_id)
-    .single();
+    batch.set(newResponseRef, {
+      event_id,
+      respondent_token,
+      submitted_at: new Date().toISOString(),
+    });
 
-  if (!event) {
-    return NextResponse.json({ error: "Event not found." }, { status: 400 });
-  }
+    const answersRef = newResponseRef.collection("answers");
+    answers.forEach(({ question_id, answer_value }) => {
+      const ansDoc = answersRef.doc(question_id);
+      batch.set(ansDoc, {
+        question_id,
+        answer_value,
+      });
+    });
 
-  // ── Insert response ────────────────────────────────────────
-  const { data: responseRow, error: responseError } = await supabase
-    .from("responses")
-    .insert({ event_id, respondent_token })
-    .select("id")
-    .single();
+    await batch.commit();
 
-  if (responseError || !responseRow) {
-    console.error("Response insert error:", responseError);
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    console.error("Submit error:", error);
     return NextResponse.json({ error: "Failed to save response." }, { status: 500 });
   }
-
-  // ── Insert answers ─────────────────────────────────────────
-  const answerRows = answers.map(({ question_id, answer_value }) => ({
-    response_id: responseRow.id,
-    question_id,
-    answer_value,
-  }));
-
-  const { error: answersError } = await supabase.from("answers").insert(answerRows);
-
-  if (answersError) {
-    console.error("Answers insert error:", answersError);
-    // Attempt cleanup — delete the response row to avoid orphans
-    await supabase.from("responses").delete().eq("id", responseRow.id);
-    return NextResponse.json({ error: "Failed to save answers." }, { status: 500 });
-  }
-
-  return NextResponse.json({ success: true }, { status: 200 });
 }

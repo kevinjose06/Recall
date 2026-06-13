@@ -1,5 +1,5 @@
 // ============================================================
-// Supabase Types — matches the DB schema from PRD Section 7
+// Firebase Types — matches the Firestore schema from PRD
 // ============================================================
 
 export type EventType =
@@ -18,8 +18,7 @@ export interface Event {
   start_date: string; // ISO date string YYYY-MM-DD
   end_date: string;   // ISO date string YYYY-MM-DD
   event_type: EventType;
-  created_at: string;
-  /** Joined aggregation — not a real column, computed via count query */
+  created_at?: string; // Stored as ISO string in Firestore
   response_count?: number;
 }
 
@@ -30,23 +29,19 @@ export interface Question {
   question_type: QuestionType;
   options: string[] | null; // null for short_text
   order_index: number;
-  created_at: string;
 }
 
 export interface Response {
-  id: string;
+  id: string; // auto-generated
   event_id: string;
   respondent_token: string;
   submitted_at: string;
 }
 
 export interface Answer {
-  id: string;
+  id: string; // usually question_id
   response_id: string;
   question_id: string;
-  // single_choice: "Option A"
-  // mcq:           ["Option A", "Option C"]
-  // short_text:    "The venue was too small"
   answer_value: string | string[];
 }
 
@@ -59,29 +54,4 @@ export interface SubmitResponsePayload {
     question_id: string;
     answer_value: string | string[];
   }[];
-}
-
-// ─── Analytics shapes ───
-
-export interface SingleChoiceAnalytics {
-  name: string;
-  value: number;
-}
-
-export interface MCQAnalytics {
-  option: string;
-  count: number;
-}
-
-export interface ShortTextAnalytics {
-  text: string;
-  submitted_at: string;
-}
-
-export interface QuestionAnalytics {
-  question: Question;
-  data:
-    | SingleChoiceAnalytics[]
-    | MCQAnalytics[]
-    | ShortTextAnalytics[];
 }

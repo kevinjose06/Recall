@@ -16,6 +16,8 @@ function LockIcon() {
   );
 }
 
+import { login } from "@/lib/auth";
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = React.useState("");
@@ -28,20 +30,15 @@ export default function LoginPage() {
     setError("");
     setIsLoading(true);
 
-    const response = await fetch("/api/static-login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!response.ok) {
-      setError("Incorrect email or password. Please check with your tech lead.");
+    try {
+      await login(email, password);
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+      setError("Incorrect email or password. Please try again.");
       setIsLoading(false);
-      return;
     }
-
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (
@@ -159,6 +156,19 @@ export default function LoginPage() {
             >
               {isLoading ? "Signing in…" : "Sign in"}
             </Button>
+            
+            <div style={{ textAlign: "center", marginTop: "8px" }}>
+              <a 
+                href="/reset-password"
+                style={{ 
+                  color: "var(--color-outline)", 
+                  fontSize: "0.875rem", 
+                  textDecoration: "none",
+                }}
+              >
+                Change password
+              </a>
+            </div>
           </form>
         </div>
       </div>

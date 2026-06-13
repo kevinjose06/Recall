@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/firebase/client";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -83,9 +83,9 @@ export function NavBar() {
           <Image
             src="/csa-logo.png"
             alt="CSA logo"
-            width={28}
-            height={28}
-            style={{ objectFit: "contain", height: "auto", flexShrink: 0 }}
+            width={36}
+            height={36}
+            style={{ objectFit: "contain", filter: "brightness(0) invert(1)", height: "auto", flexShrink: 0 }}
           />
           <span
             style={{

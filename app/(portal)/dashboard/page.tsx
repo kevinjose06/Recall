@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { Card } from "@/components/ui/Card";
 import { EventTypeBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -55,36 +53,19 @@ function ResponsesIcon() {
 }
 
 
+import { getAllEventsAdmin } from "@/lib/db-admin";
+
 export default async function DashboardPage() {
   let events: unknown[] | null = null;
 
-  if (hasSupabaseConfig()) {
-    const supabase = await createClient();
-
-    // Fetch events with response counts
-    const { data, error } = await supabase
-      .from("events")
-      .select(`
-        id,
-        title,
-        description,
-        start_date,
-        end_date,
-        event_type,
-        created_at,
-        responses(count)
-      `)
-      .order("start_date", { ascending: false });
-
-    if (error) {
-      console.error("Dashboard fetch error:", error);
-    }
-
-    events = data;
+  try {
+    events = await getAllEventsAdmin();
+  } catch (error) {
+    console.error("Dashboard fetch error:", error);
   }
 
   const eventList = (events ?? []) as (Event & {
-    responses: { count: number }[];
+    response_count?: number;
   })[];
 
   return (
@@ -129,7 +110,7 @@ export default async function DashboardPage() {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {eventList.map((event) => {
-            const responseCount = event.responses?.[0]?.count ?? 0;
+            const responseCount = event.response_count ?? 0;
             return (
               <Link
                 key={event.id}

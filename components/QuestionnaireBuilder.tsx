@@ -10,7 +10,7 @@ import {
   DraggableProvidedDraggableProps,
   DraggableProvidedDragHandleProps,
 } from "@hello-pangea/dnd";
-import { createClient } from "@/lib/supabase/client";
+import { saveQuestions } from "@/lib/db";
 import { Button } from "@/components/ui/Button";
 import type { Question, QuestionType } from "@/lib/types";
 
@@ -248,7 +248,7 @@ export function QuestionnaireBuilder({
       order_index: q.order_index,
     }))
   );
-  
+
   const [selectedType, setSelectedType] = React.useState<QuestionType>("single_choice");
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveStatus, setSaveStatus] = React.useState<"idle" | "saved" | "error">("idle");
@@ -320,13 +320,6 @@ export function QuestionnaireBuilder({
     setSaveStatus("idle");
 
     try {
-      const supabase = createClient();
-
-      await supabase
-        .from("questions")
-        .delete()
-        .eq("event_id", eventId);
-
       const rows = questions.map((q, i) => ({
         event_id: eventId,
         question_text: q.question_text.trim(),
@@ -336,17 +329,12 @@ export function QuestionnaireBuilder({
         order_index: i,
       }));
 
-      const { data, error } = await supabase
-        .from("questions")
-        .insert(rows)
-        .select("id, order_index");
-
-      if (error) throw error;
+      const newIds = await saveQuestions(eventId, rows);
 
       setQuestions((prev) =>
         prev.map((q, i) => ({
           ...q,
-          saved_id: data?.[i]?.id ?? q.saved_id,
+          saved_id: newIds[i] ?? q.saved_id,
         }))
       );
 

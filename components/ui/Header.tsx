@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/firebase/client";
 import { Button } from "@/components/ui/Button";
 import * as React from "react";
 

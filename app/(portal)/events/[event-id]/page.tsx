@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getEventAdmin, getResponseCountAdmin } from "@/lib/db-admin";
+import { adminDb } from "@/lib/firebase-admin";
 import { EventTypeBadge } from "@/components/ui/Badge";
 import { CopyButton } from "@/components/ui/CopyButton";
 
@@ -11,13 +12,8 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { "event-id": eventId } = await params;
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("events")
-    .select("title")
-    .eq("id", eventId)
-    .single();
-  return { title: data?.title ?? "Event" };
+  const event = await getEventAdmin(eventId);
+  return { title: event?.title ?? "Event" };
 }
 
 function formatDate(dateStr: string) {
@@ -31,39 +27,36 @@ function formatEventDates(startStr: string, endStr: string) {
   const start = new Date(startStr);
   const end = new Date(endStr);
   const startFormatted = formatDate(startStr);
-  
+
   if (startStr === endStr) {
     return `${startFormatted}, ${start.getFullYear()}`;
   }
-  
+
   if (start.getFullYear() !== end.getFullYear()) {
     return `${startFormatted}, ${start.getFullYear()} - ${formatDate(endStr)}, ${end.getFullYear()}`;
   }
-  
+
   return `${startFormatted} - ${formatDate(endStr)}, ${start.getFullYear()}`;
 }
 
 export default async function EventDetailPage({ params }: PageProps) {
   const { "event-id": eventId } = await params;
-  const supabase = await createClient();
 
-  const { data: event } = await supabase
-    .from("events")
-    .select("*")
-    .eq("id", eventId)
-    .single();
+  const event = await getEventAdmin(eventId);
 
   if (!event) notFound();
 
-  const { count: responseCount } = await supabase
-    .from("responses")
-    .select("*", { count: "exact", head: true })
-    .eq("event_id", eventId);
+  const responseCount = await getResponseCountAdmin(eventId);
 
-  const { count: questionCount } = await supabase
-    .from("questions")
-    .select("*", { count: "exact", head: true })
-    .eq("event_id", eventId);
+  // For questions count, we can do a simple count query on the subcollection
+  const questionsCountSnap = await adminDb
+    .collection("events")
+    .doc(eventId)
+    .collection("questions")
+    .count()
+    .get();
+  
+  const questionCount = questionsCountSnap.data().count;
 
   return (
     <div className="max-w-4xl mx-auto px-5 py-8 md:py-12 animate-fade-slide-up">

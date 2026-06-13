@@ -182,6 +182,11 @@
   box-shadow: 0 0 15px rgba(174, 198, 255, 0.10), 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
+/* ─── Logo adaptive ─── */
+.logo-adaptive {
+  filter: brightness(0) invert(1);
+}
+
 /* Input focus glow */
 .input-glow:focus-within {
   border-color: #aec6ff !important;

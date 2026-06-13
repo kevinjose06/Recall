@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getEventAdmin, getQuestionsAdmin, getResponseCountAdmin } from "@/lib/db-admin";
 import { QuestionnaireBuilder } from "@/components/QuestionnaireBuilder";
 import type { Question } from "@/lib/types";
 
@@ -11,40 +11,23 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { "event-id": eventId } = await params;
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("events")
-    .select("title")
-    .eq("id", eventId)
-    .single();
-  return { title: `Builder — ${data?.title ?? "Event"}` };
+  const event = await getEventAdmin(eventId);
+  return { title: `Builder — ${event?.title ?? "Event"}` };
 }
 
 export default async function BuilderPage({ params }: PageProps) {
   const { "event-id": eventId } = await params;
-  const supabase = await createClient();
 
-  const { data: event } = await supabase
-    .from("events")
-    .select("id, title")
-    .eq("id", eventId)
-    .single();
+  const event = await getEventAdmin(eventId);
 
   if (!event) notFound();
 
-  const { data: questions } = await supabase
-    .from("questions")
-    .select("*")
-    .eq("event_id", eventId)
-    .order("order_index", { ascending: true });
+  const questions = await getQuestionsAdmin(eventId);
 
   // Check if any responses exist — if so, lock the builder
-  const { count: responseCount } = await supabase
-    .from("responses")
-    .select("*", { count: "exact", head: true })
-    .eq("event_id", eventId);
+  const responseCount = await getResponseCountAdmin(eventId);
 
-  const isLocked = (responseCount ?? 0) > 0;
+  const isLocked = responseCount > 0;
 
   return (
     <div className="max-w-4xl mx-auto px-5 py-8 md:py-12 animate-fade-slide-up pb-32">
@@ -73,7 +56,7 @@ export default async function BuilderPage({ params }: PageProps) {
 
       <QuestionnaireBuilder
         eventId={eventId}
-        initialQuestions={(questions ?? []) as Question[]}
+        initialQuestions={questions}
         isLocked={isLocked}
       />
     </div>

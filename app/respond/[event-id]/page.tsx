@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getEventAdmin, getQuestionsAdmin } from "@/lib/db-admin";
 import { ParticipantForm } from "@/components/ParticipantForm";
 import { EventTypeBadge } from "@/components/ui/Badge";
 import type { Question } from "@/lib/types";
@@ -11,16 +11,11 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { "event-id": eventId } = await params;
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("events")
-    .select("title")
-    .eq("id", eventId)
-    .single();
+  const event = await getEventAdmin(eventId);
   return {
-    title: data?.title ? `Feedback — ${data.title}` : "Event Feedback",
-    description: data?.title
-      ? `Submit your feedback for ${data.title} — a CSA event at RIT Kottayam.`
+    title: event?.title ? `Feedback — ${event.title}` : "Event Feedback",
+    description: event?.title
+      ? `Submit your feedback for ${event.title} — a CSA event at RIT Kottayam.`
       : "Submit event feedback.",
   };
 }
@@ -35,7 +30,7 @@ function formatDate(dateStr: string) {
 function formatEventDates(startStr: string, endStr: string) {
   const start = new Date(startStr);
   const startFormatted = formatDate(startStr);
-  
+
   if (startStr === endStr) {
     return `${startFormatted}, ${start.getFullYear()}`;
   }
@@ -44,21 +39,12 @@ function formatEventDates(startStr: string, endStr: string) {
 
 export default async function RespondPage({ params }: PageProps) {
   const { "event-id": eventId } = await params;
-  const supabase = await createClient();
 
-  const { data: event } = await supabase
-    .from("events")
-    .select("id, title, description, start_date, end_date, event_type")
-    .eq("id", eventId)
-    .single();
+  const event = await getEventAdmin(eventId);
 
   if (!event) notFound();
 
-  const { data: questions } = await supabase
-    .from("questions")
-    .select("*")
-    .eq("event_id", eventId)
-    .order("order_index", { ascending: true });
+  const questions = await getQuestionsAdmin(eventId);
 
   const hasQuestions = questions && questions.length > 0;
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getEventAdmin, getQuestionsAdmin, getResponsesAndAnswersAdmin } from "@/lib/db-admin";
 import type { Question, Answer } from "@/lib/types";
 
 interface PageProps {
@@ -10,13 +10,8 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { "event-id": eventId } = await params;
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("events")
-    .select("title")
-    .eq("id", eventId)
-    .single();
-  return { title: `Responses — ${data?.title ?? "Event"}` };
+  const event = await getEventAdmin(eventId);
+  return { title: `Responses — ${event?.title ?? "Event"}` };
 }
 
 function formatDateTime(iso: string) {
@@ -31,46 +26,14 @@ function formatDateTime(iso: string) {
 
 export default async function ResponsesPage({ params }: PageProps) {
   const { "event-id": eventId } = await params;
-  const supabase = await createClient();
 
-  const { data: event } = await supabase
-    .from("events")
-    .select("id, title")
-    .eq("id", eventId)
-    .single();
-
+  const event = await getEventAdmin(eventId);
   if (!event) notFound();
 
-  const { data: questions } = await supabase
-    .from("questions")
-    .select("*")
-    .eq("event_id", eventId)
-    .order("order_index", { ascending: true });
+  const questions = await getQuestionsAdmin(eventId);
+  const { responses, answers } = await getResponsesAndAnswersAdmin(eventId);
 
-  const { data: responses } = await supabase
-    .from("responses")
-    .select("id, submitted_at")
-    .eq("event_id", eventId)
-    .order("submitted_at", { ascending: true });
-
-  const responseIds = (responses ?? []).map((r) => r.id);
-  const responseCount = responseIds.length;
-
-  let answers: (Answer & { submitted_at: string })[] = [];
-  if (responseIds.length > 0) {
-    const { data: rawAnswers } = await supabase
-      .from("answers")
-      .select("*, responses(submitted_at)")
-      .in("response_id", responseIds);
-
-    answers = (rawAnswers ?? []).map((a) => {
-      const row = a as unknown as Answer & { responses: { submitted_at: string } | null };
-      return {
-        ...row,
-        submitted_at: row.responses?.submitted_at ?? "",
-      };
-    });
-  }
+  const responseCount = responses.length;
 
   return (
     <div className="max-w-7xl mx-auto px-5 py-8 md:py-12 animate-fade-slide-up">
@@ -131,12 +94,12 @@ export default async function ResponsesPage({ params }: PageProps) {
           questions.map((question, idx) => {
             const qAnswers = answers.filter((a) => a.question_id === question.id);
             const indexMod = idx % 3;
-            
+
             // Define left-accent stripe borders based on modulo
             let accentBorderClass = "";
             let accentBgHover = "";
             let colorHex = "#aec6ff"; // primary
-            
+
             if (indexMod === 0) {
               accentBorderClass = "bg-[var(--color-primary)]/20 group-hover:bg-[var(--color-primary)]";
               accentBgHover = "hover:border-[var(--color-primary)]/20";
@@ -164,7 +127,7 @@ export default async function ResponsesPage({ params }: PageProps) {
               const total = qAnswers.length || 1;
               const segments: { name: string; percent: number; color: string }[] = [];
               const colors = ["#aec6ff", "#4edea3", "#ffb596", "#ffdad6", "#00a572"];
-              
+
               options.forEach((opt, oIdx) => {
                 const count = counts[opt] || 0;
                 segments.push({
@@ -193,7 +156,7 @@ export default async function ResponsesPage({ params }: PageProps) {
                       {question.question_text}
                     </h2>
                   </header>
-                  
+
                   <div className="flex flex-col md:flex-row items-center gap-8 justify-center flex-1">
                     {/* SVG Donut */}
                     <div className="relative w-40 h-40 flex-shrink-0">
@@ -262,7 +225,7 @@ export default async function ResponsesPage({ params }: PageProps) {
               const counts: Record<string, number> = {};
               const options = (question.options as string[]) ?? [];
               options.forEach((opt) => (counts[opt] = 0));
-              
+
               qAnswers.forEach((a) => {
                 const selected = a.answer_value as string[];
                 (selected ?? []).forEach((opt) => {

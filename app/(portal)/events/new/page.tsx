@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createEvent } from "@/lib/db";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -81,27 +81,21 @@ export default function NewEventPage() {
 
     setIsLoading(true);
 
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("events")
-      .insert({
+    try {
+      const newEventId = await createEvent({
         title: fields.title.trim(),
         description: fields.description.trim() || null,
         start_date: fields.start_date,
         end_date: fields.end_date,
-        event_type: fields.event_type,
-      })
-      .select("id")
-      .single();
+        event_type: fields.event_type as EventType,
+      });
 
-    if (error) {
+      router.push(`/events/${newEventId}`);
+    } catch (error) {
       console.error(error);
       setFormError("Something went wrong. Please try again.");
       setIsLoading(false);
-      return;
     }
-
-    router.push(`/events/${data.id}`);
   }
 
   return (
