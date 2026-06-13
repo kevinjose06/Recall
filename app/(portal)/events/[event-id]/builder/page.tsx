@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventAdmin, getQuestionsAdmin, getResponseCountAdmin } from "@/lib/db-admin";
 import { QuestionnaireBuilder } from "@/components/QuestionnaireBuilder";
+import { Card } from "@/components/ui/Card";
 import type { Question } from "@/lib/types";
 
 interface PageProps {
@@ -30,9 +31,9 @@ export default async function BuilderPage({ params }: PageProps) {
   const isLocked = responseCount > 0;
 
   return (
-    <div className="max-w-4xl mx-auto px-5 py-8 md:py-12 animate-fade-slide-up pb-32">
+    <div className="page-container pb-32">
       {/* Header Section with Breadcrumb */}
-      <div className="mb-8">
+      <Card padding="lg" className="animate-fade-slide-up" style={{ marginBottom: "24px" }}>
         <div className="flex items-center gap-2 text-[var(--color-text-secondary)] font-label-caps text-label-caps mb-4">
           <Link href="/dashboard" className="hover:text-[var(--color-primary)] transition-colors">
             Events
@@ -44,15 +45,15 @@ export default async function BuilderPage({ params }: PageProps) {
           <span className="material-symbols-outlined text-[16px] select-none">chevron_right</span>
           <span className="text-[var(--color-text-primary)]">Builder</span>
         </div>
-        <h1 className="font-display-lg text-display-lg font-bold text-[var(--color-text-primary)] leading-tight tracking-tight mb-2">
+        <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-on-surface)", marginBottom: "8px", lineHeight: 1.25 }}>
           Questionnaire builder
         </h1>
-        <p className="font-body-lg text-[var(--color-text-secondary)]">
+        <p style={{ color: "var(--color-outline)", margin: 0, fontSize: "0.9375rem" }}>
           {isLocked
             ? "This questionnaire is locked because responses have been submitted."
             : "Add questions, set options, and reorder by dragging. Save when ready."}
         </p>
-      </div>
+      </Card>
 
       <QuestionnaireBuilder
         eventId={eventId}

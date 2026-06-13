@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventAdmin, getQuestionsAdmin, getResponsesAndAnswersAdmin } from "@/lib/db-admin";
 import type { Question, Answer } from "@/lib/types";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 interface PageProps {
   params: Promise<{ "event-id": string }>;
@@ -36,42 +38,40 @@ export default async function ResponsesPage({ params }: PageProps) {
   const responseCount = responses.length;
 
   return (
-    <div className="max-w-7xl mx-auto px-5 py-8 md:py-12 animate-fade-slide-up">
+    <div className="page-container animate-fade-slide-up">
       {/* Header Context */}
-      <header className="flex flex-col gap-4 mb-8">
-        <Link
-          href={`/events/${eventId}`}
-          className="inline-flex items-center justify-center gap-1.5 text-sm font-medium text-white bg-[#002e6b] px-4 py-1.5 rounded-full shadow-[0_2px_6px_rgba(0,0,0,0.2)] relative overflow-hidden transition-all duration-300 hover:text-[#001a43] hover:border-[#c1d6ff] border border-transparent w-fit group"
-          style={{ position: "relative" }}
-        >
-          <span
-            className="absolute inset-0 bg-[#c1d6ff] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left scale-x-0 group-hover:scale-x-100"
-            style={{ zIndex: 1 }}
-          />
-          <span className="material-symbols-outlined text-sm relative" style={{ zIndex: 2 }}>
-            arrow_back
-          </span>
-          <span className="relative" style={{ zIndex: 2 }}>{event.title}</span>
+      <div style={{ marginBottom: "24px" }}>
+        <Link href={`/events/${eventId}`} style={{ textDecoration: "none" }}>
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-sm">arrow_back</span>}
+          >
+            {event.title}
+          </Button>
         </Link>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/10 pb-6">
+      </div>
+      
+      <Card padding="lg" style={{ marginBottom: "24px" }}>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
-            <h1 className="font-headline-lg text-headline-lg text-[var(--color-text-primary)] mb-2">
+            <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-on-surface)", marginBottom: "8px", lineHeight: 1.25 }}>
               Responses
             </h1>
-            <p className="font-body-sm text-[var(--color-text-secondary)]">
+            <p style={{ color: "var(--color-outline)", margin: 0, fontSize: "0.9375rem" }}>
               Analytics and feedback breakdown.
             </p>
           </div>
           <div className="text-left md:text-right">
-            <span className="block font-display-lg text-display-lg text-[var(--color-secondary)] mb-1 font-bold text-[64px] leading-none">
+            <span style={{ display: "block", fontSize: "3.5rem", fontWeight: 700, color: "var(--color-primary)", lineHeight: 1 }}>
               {responseCount}
             </span>
-            <span className="font-label-caps text-label-caps text-[var(--color-text-secondary)] uppercase tracking-widest text-[12px]">
+            <span className="label-caps" style={{ color: "var(--color-outline)", marginTop: "4px", display: "block" }}>
               Total Responses
             </span>
           </div>
         </div>
-      </header>
+      </Card>
 
       {/* Per-question analytics bento grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

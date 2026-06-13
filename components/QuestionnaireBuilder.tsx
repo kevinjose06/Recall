@@ -12,6 +12,7 @@ import {
 } from "@hello-pangea/dnd";
 import { saveQuestions } from "@/lib/db";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import type { Question, QuestionType } from "@/lib/types";
 
 const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
@@ -72,7 +73,14 @@ function OptionRow({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         placeholder={`Option ${index + 1}`}
-        className="flex-grow bg-[#050505] border border-white/8 text-[var(--color-text-primary)] rounded px-3 py-2 font-body-sm text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all"
+        style={{
+          padding: "20px 24px",
+          height: "auto",
+          minHeight: "64px",
+          textAlign: "center",
+          borderRadius: "9999px",
+        }}
+        className="flex-grow bg-[#050505] border border-white/8 text-[var(--color-text-primary)] font-body-sm text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all placeholder:text-center"
       />
       <button
         type="button"
@@ -91,11 +99,13 @@ function OptionRow({
 function QuestionCard({
   question,
   index,
+  total,
   onChange,
   onRemove,
   draggableProps,
   dragHandleProps,
   innerRef,
+  isDragging,
   disabled,
 }: {
   question: DraftQuestion;
@@ -112,6 +122,25 @@ function QuestionCard({
   const hasOptions =
     question.question_type === "single_choice" ||
     question.question_type === "mcq";
+
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function changeQuestionType(newType: QuestionType) {
+    if (newType === question.question_type) return;
+    const newOptions = newType === "short_text" ? [] : (question.options.length < 2 ? ["", ""] : question.options);
+    onChange({ ...question, question_type: newType, options: newOptions as string[] });
+  }
 
   function addOption() {
     onChange({ ...question, options: [...question.options, ""] });
@@ -141,90 +170,143 @@ function QuestionCard({
     <div
       ref={innerRef}
       {...draggableProps}
-      className="glass-panel rounded-lg p-6 transition-all duration-200"
+      className={`glass-panel bg-black/60 border border-white/10 backdrop-blur-md shadow-2xl rounded-xl pt-6 pb-14 px-6 md:pt-8 md:pb-20 md:px-8 transition-all duration-300 ${isDragging ? "border-[var(--color-primary)]/50 scale-[1.01]" : "hover:border-white/15"}`}
     >
       <div className="flex items-start gap-4">
         {/* Drag handle */}
-        <div {...(dragHandleProps ?? {})} className="drag-handle mt-2">
-          <span className="material-symbols-outlined select-none text-[20px]">
+        <div {...(dragHandleProps ?? {})} className="drag-handle mt-1 cursor-grab active:cursor-grabbing text-[var(--color-text-secondary)] hover:text-white transition-colors ml-2">
+          <span className="material-symbols-outlined select-none text-[22px]">
             drag_indicator
           </span>
         </div>
 
-        <div className="flex-grow flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <span className="font-label-caps text-label-caps text-[var(--color-text-secondary)]">
+        <div className="flex-grow flex flex-col gap-3">
+          {/* Card Header Row */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
+            <div className={`flex items-center gap-3 w-full sm:w-auto relative ${isDropdownOpen ? 'z-50' : 'z-10'}`}>
+              <span className="bg-white/5 border border-white/10 text-[var(--color-text-primary)] font-semibold px-3 py-1.5 rounded text-[11px] tracking-wider uppercase">
                 Q{index + 1}
               </span>
-              <span className="px-3 py-1 rounded-full bg-[var(--color-bg-highest)] text-[var(--color-text-secondary)] font-label-caps text-label-caps text-[10px] uppercase tracking-wider">
-                {QUESTION_TYPE_LABELS[question.question_type]}
-              </span>
+              
+              <div className="relative w-full sm:w-60" ref={dropdownRef}>
+                <div 
+                  className={`w-full bg-[#050505] border text-[var(--color-text-primary)] rounded-full pl-10 pr-10 font-body-sm text-sm cursor-pointer transition-all relative flex items-center justify-center ${disabled ? 'opacity-50 cursor-not-allowed border-white/5' : 'border-white/8 hover:border-[var(--color-primary)]/50'}`}
+                  style={{
+                    paddingTop: "20px",
+                    paddingBottom: "20px",
+                    height: "auto",
+                    minHeight: "64px",
+                  }}
+                  onClick={() => !disabled && setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  <span className="font-medium text-center">{QUESTION_TYPE_LABELS[question.question_type]}</span>
+                  <span className={`material-symbols-outlined text-[var(--color-text-secondary)] absolute right-5 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}>
+                    expand_more
+                  </span>
+                </div>
+                
+                {isDropdownOpen && !disabled && (
+                  <div className="absolute top-[calc(100%+8px)] left-0 w-full z-50">
+                    <Card padding="sm" style={{ padding: "8px", background: "#0a0a0a", border: "1px solid rgba(255, 255, 255, 0.15)" }}>
+                      <div className="flex flex-col gap-1">
+                        {(Object.keys(QUESTION_TYPE_LABELS) as QuestionType[]).map((type) => (
+                          <div
+                            key={type}
+                            className={`px-4 py-3 rounded cursor-pointer font-body-sm text-sm transition-colors flex items-center justify-between ${question.question_type === type ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-[var(--color-text-primary)] hover:bg-white/5'}`}
+                            onClick={() => {
+                              changeQuestionType(type);
+                              setIsDropdownOpen(false);
+                            }}
+                          >
+                            {QUESTION_TYPE_LABELS[type]}
+                            {question.question_type === type && <span className="material-symbols-outlined text-[16px]">check</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  </div>
+                )}
+              </div>
             </div>
+            
             <button
               type="button"
               onClick={onRemove}
               disabled={disabled}
-              className="text-[var(--color-error)] hover:text-[var(--color-error-container)] transition-colors disabled:opacity-40"
+              style={{ marginRight: "120px" }}
+              className="text-[var(--color-error)] hover:text-red-400 p-2 hover:bg-white/5 rounded-full transition-all duration-200 disabled:opacity-40"
+              aria-label="Delete question"
             >
               <span className="material-symbols-outlined text-[20px]">delete</span>
             </button>
           </div>
 
-          <div>
-            <label className="block font-label-caps text-label-caps text-[var(--color-text-secondary)] mb-2">
-              Question Text
-            </label>
-            <input
-              type="text"
-              value={question.question_text}
-              onChange={(e) =>
-                onChange({ ...question, question_text: e.target.value })
-              }
-              disabled={disabled}
-              placeholder="Type your question here"
-              className="w-full bg-[#050505] border border-white/8 text-[var(--color-text-primary)] rounded px-4 py-3 font-body-sm text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all"
-            />
-          </div>
-
-          {/* Options indents list */}
-          {hasOptions && (
-            <div className="pl-4 border-l border-white/10 flex flex-col gap-3 mt-2">
-              <label className="block font-label-caps text-label-caps text-[var(--color-text-secondary)] mb-1">
-                Options
+          <div className="max-w-[540px] w-[92%] sm:w-full flex flex-col gap-4">
+            <div>
+              <label className="block font-label-caps text-label-caps text-[var(--color-text-secondary)] mb-2.5">
+                Question Text
               </label>
-              {question.options.map((opt, i) => (
-                <OptionRow
-                  key={i}
-                  index={i}
-                  value={opt}
-                  onChange={(v) => updateOption(i, v)}
-                  onRemove={() => removeOption(i)}
-                  canRemove={question.options.length > 2}
-                  disabled={disabled}
-                />
-              ))}
-              <button
-                type="button"
-                onClick={addOption}
-                disabled={disabled}
-                className="self-start text-[var(--color-primary)] font-label-caps text-label-caps flex items-center gap-1 mt-2 hover:text-[var(--color-primary-fixed)] transition-colors"
-              >
-                <span className="material-symbols-outlined text-[16px]">add</span> Add option
-              </button>
-            </div>
-          )}
-
-          {question.question_type === "short_text" && (
-            <div className="mt-2">
               <input
                 type="text"
-                disabled
-                placeholder="Participant will type short answer here..."
-                className="w-full bg-transparent border-b border-white/20 pb-2 font-body-sm text-sm text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed outline-none"
+                value={question.question_text}
+                onChange={(e) =>
+                  onChange({ ...question, question_text: e.target.value })
+                }
+                disabled={disabled}
+                placeholder="Type your question here"
+                style={{
+                  padding: "20px 24px",
+                  height: "auto",
+                  minHeight: "64px",
+                  textAlign: "center",
+                  borderRadius: "9999px",
+                }}
+                className="w-full bg-[#050505] border border-white/8 text-[var(--color-text-primary)] font-body-sm text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all placeholder:text-center"
               />
             </div>
-          )}
+
+            {/* Options list */}
+            {hasOptions && (
+              <div className="flex flex-col gap-3">
+                <label className="block font-label-caps text-label-caps text-[var(--color-text-secondary)] mb-1">
+                  Options
+                </label>
+                <div className="flex flex-col gap-3">
+                  {question.options.map((opt, i) => (
+                    <OptionRow
+                      key={i}
+                      index={i}
+                      value={opt}
+                      onChange={(v) => updateOption(i, v)}
+                      onRemove={() => removeOption(i)}
+                      canRemove={question.options.length > 2}
+                      disabled={disabled}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={addOption}
+                  disabled={disabled}
+                  style={{ marginTop: "-6px" }}
+                  className="self-start text-[var(--color-primary)] font-label-caps text-label-caps flex items-center gap-2 hover:text-[var(--color-primary-fixed)] transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add</span> Add option
+                </button>
+              </div>
+            )}
+
+            {question.question_type === "short_text" && (
+              <div className="mt-2" style={{ padding: "16px 0" }}>
+                <input
+                  type="text"
+                  disabled
+                  placeholder="Participant will type short answer here..."
+                  className="w-full bg-transparent border-b border-white/10 pb-3 font-body-sm text-sm text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed outline-none"
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -249,7 +331,6 @@ export function QuestionnaireBuilder({
     }))
   );
 
-  const [selectedType, setSelectedType] = React.useState<QuestionType>("single_choice");
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveStatus, setSaveStatus] = React.useState<"idle" | "saved" | "error">("idle");
   const [saveError, setSaveError] = React.useState("");
@@ -260,8 +341,8 @@ export function QuestionnaireBuilder({
       {
         id: generateLocalId(),
         question_text: "",
-        question_type: selectedType,
-        options: selectedType === "short_text" ? [] : ["", ""],
+        question_type: "single_choice",
+        options: ["", ""],
         order_index: prev.length,
       },
     ]);
@@ -314,7 +395,7 @@ export function QuestionnaireBuilder({
     if (err) {
       setSaveError(err);
       return;
-    }
+      }
     setSaveError("");
     setIsSaving(true);
     setSaveStatus("idle");
@@ -351,87 +432,95 @@ export function QuestionnaireBuilder({
 
   if (isLocked) {
     return (
-      <div
-        role="status"
-        className="glass-panel border-l-4 border-l-[var(--color-tertiary)] p-6 rounded-lg text-sm text-[var(--color-text-secondary)] mb-6 flex items-start gap-3"
-      >
-        <span className="material-symbols-outlined text-[var(--color-tertiary)] flex-shrink-0 mt-0.5">
-          warning
-        </span>
-        <div>
-          <strong className="text-[var(--color-text-primary)] font-semibold">Questionnaire locked.</strong>{" "}
-          This event already has responses. The questionnaire cannot be edited to preserve data integrity.
-          <div className="mt-3">
-            <Link
-              href={`/events/${eventId}`}
-              className="text-[var(--color-primary)] hover:underline"
-            >
-              Back to event hub
-            </Link>
+      <Card padding="md" style={{ borderLeft: "4px solid var(--color-tertiary)", marginBottom: "24px" }}>
+        <div className="flex items-start gap-3 text-sm text-[var(--color-text-secondary)]">
+          <span className="material-symbols-outlined text-[var(--color-tertiary)] flex-shrink-0 mt-0.5">
+            warning
+          </span>
+          <div>
+            <strong className="text-[var(--color-text-primary)] font-semibold">Questionnaire locked.</strong>{" "}
+            This event already has responses. The questionnaire cannot be edited to preserve data integrity.
+            <div className="mt-3">
+              <Link
+                href={`/events/${eventId}`}
+                className="text-[var(--color-primary)] hover:underline"
+              >
+                Back to event hub
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
     <div>
-      {/* Controls */}
-      <div className="glass-panel rounded-lg p-6 mb-6 flex flex-col sm:flex-row gap-4 items-end sm:items-center justify-between">
-        <div className="flex-grow w-full sm:w-auto">
-          <label className="block font-label-caps text-label-caps text-[var(--color-text-secondary)] mb-2">
-            Question Type
-          </label>
-          <div className="relative">
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value as QuestionType)}
-              className="w-full appearance-none bg-[#050505] border border-white/8 text-[var(--color-text-primary)] rounded-full py-3 pl-4 pr-10 font-body-sm text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all cursor-pointer"
-            >
-              {(Object.keys(QUESTION_TYPE_LABELS) as QuestionType[]).map((type) => (
-                <option key={type} value={type}>
-                  {QUESTION_TYPE_LABELS[type]}
-                </option>
-              ))}
-            </select>
-            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none">
-              expand_more
+      <div className="animate-fade-slide-up">
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-24 bg-black/40 border border-white/5 p-4 rounded-xl backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-[var(--color-text-secondary)] font-body-sm px-1">
+              {questions.length} question{questions.length !== 1 ? "s" : ""} configured
             </span>
+            {saveStatus === "saved" && (
+              <span className="text-[var(--color-secondary)] text-sm font-semibold flex items-center gap-1.5 animate-fade-in">
+                <span className="material-symbols-outlined text-[16px]">check_circle</span> Saved successfully
+              </span>
+            )}
+            {saveStatus === "error" && (
+              <span className="text-[var(--color-error)] text-sm font-semibold flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">error</span> Error saving
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+            <Button
+              onClick={addQuestion}
+              disabled={isSaving}
+              variant="secondary"
+              size="md"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+              className="w-full sm:w-auto"
+            >
+              Add question
+            </Button>
+            <Button
+              onClick={handleSave}
+              isLoading={isSaving}
+              disabled={isSaving || questions.length === 0}
+              variant="secondary-light"
+              size="md"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">save</span>}
+              className="w-full sm:w-auto"
+            >
+              Save questionnaire
+            </Button>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={addQuestion}
-          disabled={isSaving}
-          className="w-full sm:w-auto btn-primary bg-[var(--color-primary)] text-[var(--color-on-primary-fixed-variant)] rounded-full px-6 py-3 font-label-caps text-label-caps flex items-center justify-center gap-2 shrink-0 transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <span className="material-symbols-outlined text-[18px]">add</span>
-          Add question
-        </button>
-      </div>
 
-      {/* Validation error */}
-      {saveError && (
-        <div
-          role="alert"
-          className="p-4 bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-[var(--color-error)] text-sm rounded-lg mb-6 flex items-center gap-2"
-        >
-          <span className="material-symbols-outlined text-lg">error</span>
-          {saveError}
-        </div>
-      )}
+        {/* Validation error */}
+        {saveError && (
+          <div
+            role="alert"
+            className="p-4 bg-[var(--color-error)]/10 border border-[var(--color-error)]/25 text-[var(--color-error)] text-sm rounded-lg mb-8 flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-lg">error</span>
+            {saveError}
+          </div>
+        )}
 
-      {/* Questions list */}
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="questions">
-          {(provided) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="flex flex-col gap-6 mb-6"
-            >
+        {/* Questions list */}
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="questions">
+            {(provided) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="flex flex-col gap-6 mb-6"
+              >
               {questions.length === 0 && (
-                <div className="text-center py-16 border-2 border-dashed border-white/10 rounded-lg text-[var(--color-text-secondary)]">
+                <div className="text-center py-16 border-2 border-dashed border-white/10 rounded-lg text-[var(--color-text-secondary)] bg-black/20">
                   No questions yet. Add your first question above.
                 </div>
               )}
@@ -459,25 +548,6 @@ export function QuestionnaireBuilder({
           )}
         </Droppable>
       </DragDropContext>
-
-      {/* Sticky footer Save bar */}
-      <div className="fixed bottom-0 left-0 w-full glass-panel border-t border-white/10 p-4 md:px-8 md:py-6 z-40 flex flex-col md:flex-row items-center justify-between gap-4">
-        <span className="text-sm text-[var(--color-text-secondary)] font-body-sm">
-          {questions.length} question{questions.length !== 1 ? "s" : ""} configured
-          {saveStatus === "saved" && (
-            <span className="text-[var(--color-secondary)] ml-3 font-semibold flex-inline items-center gap-1">
-              ✓ Saved successfully
-            </span>
-          )}
-        </span>
-        <Button
-          onClick={handleSave}
-          isLoading={isSaving}
-          disabled={isSaving || questions.length === 0}
-          className="w-full md:w-auto btn-primary bg-[var(--color-primary)] text-[var(--color-on-primary-fixed-variant)] rounded-full px-8 py-4 font-label-caps text-label-caps text-sm transition-all"
-        >
-          {isSaving ? "Saving…" : "Save questionnaire"}
-        </Button>
       </div>
     </div>
   );
