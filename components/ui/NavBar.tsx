@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { createClient } from "@/lib/firebase/client";
+import { logout } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -48,9 +48,7 @@ export function NavBar() {
 
   async function handleSignOut() {
     setSigningOut(true);
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    await fetch("/api/static-logout", { method: "POST" });
+    await logout();
     router.push("/login");
   }
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/firebase/client";
+import { logout } from "@/lib/auth";
 import { Button } from "@/components/ui/Button";
 import * as React from "react";
 
@@ -12,9 +12,7 @@ export function Header() {
 
   async function handleSignOut() {
     setSigningOut(true);
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    await fetch("/api/static-logout", { method: "POST" });
+    await logout();
     router.push("/login");
   }
 
