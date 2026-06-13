@@ -159,7 +159,7 @@
 }
 
 .slide-fill-btn:hover:not(:disabled) {
-  color: #ffffff !important;
+  color: var(--color-hover-text, #ffffff) !important;
   transform: translateY(-1px);
 }
 
@@ -169,8 +169,8 @@
 
 /* ─── Glass panel utility ─── */
 .glass-panel {
-  background: rgba(17, 17, 17, 0.5);
-  backdrop-filter: blur(10px);
+  background: rgba(13, 13, 13, 0.96);
+  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);

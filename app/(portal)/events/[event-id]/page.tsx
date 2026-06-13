@@ -5,6 +5,8 @@ import { getEventAdmin, getResponseCountAdmin } from "@/lib/db-admin";
 import { adminDb } from "@/lib/firebase-admin";
 import { EventTypeBadge } from "@/components/ui/Badge";
 import { CopyButton } from "@/components/ui/CopyButton";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 interface PageProps {
   params: Promise<{ "event-id": string }>;
@@ -59,116 +61,130 @@ export default async function EventDetailPage({ params }: PageProps) {
   const questionCount = questionsCountSnap.data().count;
 
   return (
-    <div className="max-w-4xl mx-auto px-5 py-8 md:py-12 animate-fade-slide-up">
+    <div className="page-container animate-fade-slide-up">
       {/* Back nav */}
-      <Link
-        href="/dashboard"
-        className="inline-flex items-center justify-center gap-1.5 text-sm font-medium text-white bg-[#002e6b] px-4 py-1.5 rounded-full shadow-[0_2px_6px_rgba(0,0,0,0.2)] relative overflow-hidden transition-all duration-300 hover:text-[#001a43] hover:border-[#c1d6ff] border border-transparent mb-6 w-fit group"
-        style={{ position: "relative" }}
-      >
-        <span
-          className="absolute inset-0 bg-[#c1d6ff] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left scale-x-0 group-hover:scale-x-100"
-          style={{ zIndex: 1 }}
-        />
-        <span className="material-symbols-outlined text-sm relative" style={{ zIndex: 2 }}>arrow_back</span>
-        <span className="relative" style={{ zIndex: 2 }}>All events</span>
-      </Link>
+      <div style={{ marginBottom: "24px" }}>
+        <Link href="/dashboard" style={{ textDecoration: "none" }}>
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-sm">arrow_back</span>}
+          >
+            All events
+          </Button>
+        </Link>
+      </div>
 
       {/* Event header */}
-      <header className="mb-8">
-        <div className="flex items-center gap-3 mb-2 flex-wrap">
-          <EventTypeBadge type={event.event_type} />
-          <span className="text-[var(--color-text-secondary)] font-body-sm text-sm">
-            {formatEventDates(event.start_date, event.end_date)}
-          </span>
-        </div>
-        <h1 className="font-display-lg text-display-lg font-bold text-[var(--color-text-primary)] leading-tight tracking-tight mb-2">
-          {event.title}
-        </h1>
-        {event.description && (
-          <p className="font-body-lg text-[var(--color-text-secondary)] max-w-2xl margin-0">
-            {event.description}
-          </p>
-        )}
-      </header>
+      <Card padding="lg" style={{ marginBottom: "24px" }}>
+        <header>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px", flexWrap: "wrap" }}>
+            <EventTypeBadge type={event.event_type} />
+            <span style={{ color: "var(--color-outline)", fontSize: "0.875rem" }}>
+              {formatEventDates(event.start_date, event.end_date)}
+            </span>
+          </div>
+          <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-on-surface)", marginBottom: "8px", lineHeight: 1.25 }}>
+            {event.title}
+          </h1>
+          {event.description && (
+            <p style={{ color: "var(--color-outline)", margin: 0, fontSize: "0.9375rem" }}>
+              {event.description}
+            </p>
+          )}
+        </header>
+      </Card>
 
       {/* Stats row (Bento Style) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", marginBottom: "24px" }}>
         {/* Responses Stat */}
-        <div className="glass-panel rounded-lg p-6 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-[var(--color-primary)]/10 rounded-full blur-3xl group-hover:bg-[var(--color-primary)]/20 transition-all duration-500"></div>
-          <div className="flex items-center justify-between mb-4">
-            <span className="font-label-caps text-label-caps text-[var(--color-text-secondary)] uppercase tracking-widest">
+        <Card padding="md">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <span className="label-caps" style={{ color: "var(--color-outline)" }}>
               Responses
             </span>
-            <span className="material-symbols-outlined text-[var(--color-primary)]">
+            <span className="material-symbols-outlined" style={{ color: "var(--color-primary)" }}>
               groups
             </span>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display-lg text-[64px] leading-none font-bold text-[var(--color-primary)]">
+          <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+            <span style={{ fontSize: "3.5rem", fontWeight: 700, color: "var(--color-primary)", lineHeight: 1 }}>
               {responseCount ?? 0}
             </span>
-            <span className="font-body-sm text-[var(--color-text-secondary)]">
+            <span style={{ color: "var(--color-outline)", fontSize: "0.875rem" }}>
               total
             </span>
           </div>
-        </div>
+        </Card>
 
         {/* Questions Stat */}
-        <div className="glass-panel rounded-lg p-6 flex flex-col justify-between group">
-          <div className="flex items-center justify-between mb-4">
-            <span className="font-label-caps text-label-caps text-[var(--color-text-secondary)] uppercase tracking-widest">
+        <Card padding="md">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <span className="label-caps" style={{ color: "var(--color-outline)" }}>
               Questions
             </span>
-            <span className="material-symbols-outlined text-[var(--color-text-secondary)]">
+            <span className="material-symbols-outlined" style={{ color: "var(--color-outline)" }}>
               help_center
             </span>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display-lg text-[64px] leading-none font-bold text-[var(--color-text-primary)]">
+          <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+            <span style={{ fontSize: "3.5rem", fontWeight: 700, color: "var(--color-on-surface)", lineHeight: 1 }}>
               {questionCount ?? 0}
             </span>
-            <span className="font-body-sm text-[var(--color-text-secondary)]">
+            <span style={{ color: "var(--color-outline)", fontSize: "0.875rem" }}>
               configured
             </span>
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Quick actions */}
-      <div className="flex flex-wrap gap-4 mb-8">
-        <Link
-          href={`/events/${eventId}/builder`}
-          className="btn-primary-slide btn-hover-glow bg-[var(--color-primary)] text-[var(--color-on-primary-fixed-variant)] font-body-sm font-semibold py-3 px-6 rounded-full flex items-center gap-2 transition-all"
-        >
-          <span className="material-symbols-outlined text-lg">edit_document</span>
-          Questionnaire builder
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", justifyContent: "center", marginBottom: "24px" }}>
+        <Link href={`/events/${eventId}/builder`} style={{ textDecoration: "none" }}>
+          <Button
+            variant="primary"
+            leftIcon={<span className="material-symbols-outlined text-lg">edit_document</span>}
+          >
+            Questionnaire builder
+          </Button>
         </Link>
-        <Link
-          href={`/events/${eventId}/responses`}
-          className="glass-panel hover:bg-white/5 btn-hover-glow text-[var(--color-text-primary)] font-body-sm py-3 px-6 rounded-full flex items-center gap-2 transition-all"
-        >
-          <span className="material-symbols-outlined text-lg">table_chart</span>
-          View responses
+        <Link href={`/events/${eventId}/responses`} style={{ textDecoration: "none" }}>
+          <Button
+            variant="secondary-light"
+            leftIcon={<span className="material-symbols-outlined text-lg">table_chart</span>}
+          >
+            View responses
+          </Button>
         </Link>
       </div>
 
       {/* Participant link card */}
-      <div className="glass-panel rounded-lg p-6 md:p-8">
-        <div className="mb-6">
-          <h2 className="font-headline-md text-headline-md text-[var(--color-text-primary)] mb-2">
+      <Card padding="lg">
+        <div style={{ marginBottom: "20px" }}>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-on-surface)", marginBottom: "6px" }}>
             Participant link
           </h2>
-          <p className="font-body-sm text-[var(--color-text-secondary)] max-w-2xl">
+          <p style={{ color: "var(--color-outline)", fontSize: "0.875rem", margin: 0 }}>
             Share this unique link with participants to collect their feedback. Anyone with this link can submit a response.
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4 items-stretch">
-          <div className="flex-grow relative">
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "stretch" }}>
+          <div style={{ flex: 1, minWidth: "240px" }}>
             <input
               id="participant-link"
-              className="w-full bg-[var(--color-bg-lowest)] border border-white/10 text-[var(--color-text-primary)] font-mono text-sm rounded-lg py-3 px-4 focus:outline-none focus:border-[var(--color-primary)]/50 focus:ring-1 focus:ring-[var(--color-primary)]/50 transition-colors"
+              className="input-glow"
+              style={{
+                width: "100%",
+                backgroundColor: "var(--color-surface-container-lowest)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                color: "var(--color-on-surface)",
+                fontFamily: "var(--font-mono)",
+                fontSize: "0.875rem",
+                borderRadius: "var(--radius-md)",
+                padding: "12px 16px",
+                outline: "none",
+                transition: "border-color var(--transition-base)",
+              }}
               readOnly
               type="text"
               value={`https://csa-feedback.vercel.app/respond/${eventId}`}
@@ -176,7 +192,7 @@ export default async function EventDetailPage({ params }: PageProps) {
           </div>
           <ParticipantLinkCopy eventId={eventId} />
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

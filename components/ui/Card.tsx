@@ -31,9 +31,9 @@ export function Card({
       data-interactive={interactive ? "true" : undefined}
       style={{
         /* glassmorphism: obsidian glass */
-        background: "rgba(17, 17, 17, 0.5)",
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
+        background: "rgba(13, 13, 13, 0.96)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
         border: "1px solid rgba(255, 255, 255, 0.08)",
         borderRadius: "var(--radius-lg)",
         padding: paddingMap[padding],

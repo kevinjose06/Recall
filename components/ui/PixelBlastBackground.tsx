@@ -31,7 +31,6 @@ export function PixelBlastBackground() {
         transparent={false}
         edgeFade={0}
       />
-
     </div>
   );
 }

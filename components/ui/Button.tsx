@@ -4,7 +4,7 @@ import * as React from "react";
 
 
 // ─── Types ────────────────────────────────────────────────────
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "secondary-light";
 type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -33,6 +33,14 @@ function getVariantStyle(variant: ButtonVariant): React.CSSProperties {
         borderStyle: "solid",
         borderWidth: "1px",
         borderColor: "var(--color-border)",
+      };
+    case "secondary-light":
+      return {
+        backgroundColor: "#7ba4ff",                   /* Light Purple background */
+        color: "#001a43",                             /* Dark text */
+        borderStyle: "solid",
+        borderWidth: "1px",
+        borderColor: "#7ba4ff",
       };
     case "ghost":
       return {
@@ -128,68 +136,39 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     // Hover dynamic color overrides to match slider flow
     if (hovered && !isDisabled) {
-      if (variant === "primary") {
-        combinedStyle.color = "#001a43";
-        combinedStyle.borderColor = "#c1d6ff";
-      } else if (variant === "secondary") {
-        combinedStyle.color = "var(--color-text-primary)";
-        combinedStyle.borderColor = "var(--color-border-focus)";
+      if (variant === "secondary-light") {
+        combinedStyle.borderColor = "#002e6b";
+        combinedStyle.color = "#ffffff";
       } else {
-        combinedStyle.color = "var(--color-text-primary)";
+        combinedStyle.borderColor = "#7ba4ff";
+        combinedStyle.color = "#001a43";
       }
     }
 
     return (
       <button
         ref={ref}
-        className={className || ""}
+        className={`slide-fill-btn ${className || ""}`}
         disabled={isDisabled}
-        style={combinedStyle}
+        style={{
+          ...combinedStyle,
+          ["--color-hover-fill" as any]: variant === "secondary-light" ? "#002e6b" : "#7ba4ff",
+          ["--color-hover-text" as any]: variant === "secondary-light" ? "#ffffff" : "#001a43",
+        }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         aria-busy={isLoading}
         {...props}
       >
-        {/* Sliding flow overlay */}
-        {variant === "primary" && (
-          <span
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              backgroundColor: "#c1d6ff", // light indigo
-              transform: hovered && !isDisabled ? "scaleX(1)" : "scaleX(0)",
-              transformOrigin: "left",
-              transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-              zIndex: -1,
-            }}
-          />
-        )}
-        {variant === "secondary" && (
-          <span
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              backgroundColor: "rgba(123, 164, 255, 0.12)",
-              transform: hovered && !isDisabled ? "scaleX(1)" : "scaleX(0)",
-              transformOrigin: "left",
-              transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-              zIndex: -1,
-            }}
-          />
-        )}
         {isLoading ? (
           <Spinner size={size === "sm" ? 14 : size === "md" ? 16 : 18} />
         ) : (
-          leftIcon
+          leftIcon && <span style={{ color: "inherit", display: "inline-flex", alignItems: "center" }}>{leftIcon}</span>
         )}
-        <span style={{ position: "relative", zIndex: 2 }}>{children}</span>
-        {!isLoading && rightIcon}
+        <span style={{ position: "relative", zIndex: 2, color: "inherit" }}>{children}</span>
+        {!isLoading && rightIcon && (
+          <span style={{ color: "inherit", display: "inline-flex", alignItems: "center" }}>{rightIcon}</span>
+        )}
       </button>
     );
   }
