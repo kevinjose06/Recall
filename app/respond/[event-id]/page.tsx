@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ParticipantForm } from "@/components/ParticipantForm";
@@ -27,24 +26,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-IN", {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
     day: "numeric",
-    month: "long",
-    year: "numeric",
   });
 }
 
 function formatEventDates(startStr: string, endStr: string) {
+  const start = new Date(startStr);
+  const startFormatted = formatDate(startStr);
+  
   if (startStr === endStr) {
-    return formatDate(startStr);
+    return `${startFormatted}, ${start.getFullYear()}`;
   }
-  return `${formatDate(startStr)} — ${formatDate(endStr)}`;
+  return `${startFormatted} - ${formatDate(endStr)}, ${start.getFullYear()}`;
 }
 
 export default async function RespondPage({ params }: PageProps) {
   const { "event-id": eventId } = await params;
-
-  // Public page — use anon client (no auth needed)
   const supabase = await createClient();
 
   const { data: event } = await supabase
@@ -64,89 +63,45 @@ export default async function RespondPage({ params }: PageProps) {
   const hasQuestions = questions && questions.length > 0;
 
   return (
-    <div
-      style={{
-        minHeight: "100dvh",
-        backgroundColor: "var(--color-bg-base)",
-        paddingBottom: "48px",
-      }}
-    >
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] relative overflow-x-hidden">
       {/* Top bar */}
-      <header
-        style={{
-          borderBottom: "1px solid var(--color-border)",
-          backgroundColor: "var(--color-bg-surface)",
-          padding: "12px 24px",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-        }}
-      >
+      <header className="sticky top-0 left-0 w-full z-50 flex items-center gap-3 px-6 h-16 bg-[var(--color-bg-surface)]/50 backdrop-blur-xl border-b border-white/10">
         <img
           src="/csa-logo.png?v=2"
           alt="CSA logo"
           width={22}
           height={22}
-          className="logo-adaptive"
-          style={{ objectFit: "contain" }}
+          className="logo-adaptive object-contain"
         />
-        <span
-          style={{
-            fontSize: "0.875rem",
-            fontWeight: 500,
-            color: "var(--color-text-secondary)",
-          }}
-        >
+        <span className="font-body-sm text-sm font-semibold text-[var(--color-text-secondary)]">
           CSA Recall · RIT Kottayam
         </span>
       </header>
 
-      <div style={{ maxWidth: "640px", margin: "0 auto", padding: "32px 20px 0" }}>
-        {/* Event info */}
-        <div style={{ marginBottom: "28px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              marginBottom: "10px",
-              flexWrap: "wrap",
-            }}
-          >
+      {/* Main Container */}
+      <main className="max-w-xl mx-auto px-5 py-8 md:py-12 flex flex-col">
+        {/* Event Info Header */}
+        <header className="mb-8 stagger-in" style={{ animationDelay: "0.1s" }}>
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
             <EventTypeBadge type={event.event_type} />
-            <span style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)" }}>
+            <span className="font-body-sm text-sm text-[var(--color-text-secondary)]">
               {formatEventDates(event.start_date, event.end_date)}
             </span>
           </div>
-          <h1
-            style={{
-              fontSize: "1.625rem",
-              fontWeight: 700,
-              letterSpacing: "-0.02em",
-              marginBottom: "8px",
-            }}
-          >
+          <h1 className="font-display-lg text-display-lg font-bold text-[var(--color-text-primary)] leading-tight tracking-tight mb-2">
             {event.title}
           </h1>
           {event.description && (
-            <p style={{ color: "var(--color-text-secondary)", fontSize: "0.9375rem", lineHeight: 1.65, margin: 0 }}>
+            <p className="font-body-lg text-[var(--color-text-secondary)]">
               {event.description}
             </p>
           )}
-        </div>
+        </header>
 
         {/* No questions */}
         {!hasQuestions && (
-          <div
-            style={{
-              padding: "32px 24px",
-              backgroundColor: "var(--color-bg-surface)",
-              border: "1px solid var(--color-border)",
-              borderRadius: "var(--radius-lg)",
-              textAlign: "center",
-            }}
-          >
-            <p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", margin: 0 }}>
+          <div className="glass-panel rounded-lg p-8 text-center stagger-in" style={{ animationDelay: "0.2s" }}>
+            <p className="font-body-sm text-sm text-[var(--color-text-secondary)] margin-0">
               The feedback form for this event hasn&apos;t been set up yet. Please check back later.
             </p>
           </div>
@@ -161,7 +116,8 @@ export default async function RespondPage({ params }: PageProps) {
             questions={questions as Question[]}
           />
         )}
-      </div>
+      </main>
     </div>
   );
 }
+

@@ -1,6 +1,6 @@
 export function Spinner({
   size = 20,
-  color = "var(--color-accent)",
+  color = "var(--color-primary)",
 }: {
   size?: number;
   color?: string;

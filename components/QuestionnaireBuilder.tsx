@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   DragDropContext,
   Droppable,
@@ -11,9 +12,6 @@ import {
 } from "@hello-pangea/dnd";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
-import { Card } from "@/components/ui/Card";
 import type { Question, QuestionType } from "@/lib/types";
 
 const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
@@ -59,22 +57,14 @@ function OptionRow({
   disabled: boolean;
 }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-      }}
-    >
-      <div
-        style={{
-          width: "6px",
-          height: "6px",
-          borderRadius: "50%",
-          border: "1.5px solid var(--color-text-muted)",
-          flexShrink: 0,
-        }}
-        aria-hidden="true"
+    <div className="flex items-center gap-3">
+      <span className="material-symbols-outlined text-on-surface-variant text-[18px]">
+        drag_indicator
+      </span>
+      <input
+        type="radio"
+        disabled
+        className="w-4 h-4 rounded-full border border-white/10 bg-transparent text-[var(--color-primary)] focus:ring-0"
       />
       <input
         type="text"
@@ -82,60 +72,15 @@ function OptionRow({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         placeholder={`Option ${index + 1}`}
-        aria-label={`Option ${index + 1}`}
-        style={{
-          flex: 1,
-          height: "34px",
-          padding: "0 10px",
-          border: "1px solid var(--color-border)",
-          borderRadius: "var(--radius-md)",
-          backgroundColor: "var(--color-bg-subtle)",
-          color: "var(--color-text-primary)",
-          fontSize: "0.875rem",
-          fontFamily: "var(--font-sans)",
-          outline: "none",
-          transition: "border-color var(--transition-fast)",
-        }}
-        onFocus={(e) => {
-          e.currentTarget.style.borderColor = "var(--color-border-focus)";
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.borderColor = "var(--color-border)";
-        }}
+        className="flex-grow bg-[#050505] border border-white/8 text-[var(--color-text-primary)] rounded px-3 py-2 font-body-sm text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all"
       />
       <button
         type="button"
         onClick={onRemove}
         disabled={!canRemove || disabled}
-        aria-label={`Remove option ${index + 1}`}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: "28px",
-          height: "28px",
-          borderRadius: "var(--radius-md)",
-          border: "none",
-          backgroundColor: "transparent",
-          color: "var(--color-text-muted)",
-          cursor: !canRemove || disabled ? "not-allowed" : "pointer",
-          opacity: !canRemove || disabled ? 0.4 : 1,
-          flexShrink: 0,
-        }}
-        onMouseEnter={(e) => {
-          if (canRemove && !disabled) {
-            e.currentTarget.style.backgroundColor = "var(--color-error-subtle)";
-            e.currentTarget.style.color = "var(--color-error)";
-          }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "transparent";
-          e.currentTarget.style.color = "var(--color-text-muted)";
-        }}
+        className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
+        <span className="material-symbols-outlined text-[18px]">close</span>
       </button>
     </div>
   );
@@ -146,13 +91,11 @@ function OptionRow({
 function QuestionCard({
   question,
   index,
-  total,
   onChange,
   onRemove,
   draggableProps,
   dragHandleProps,
   innerRef,
-  isDragging,
   disabled,
 }: {
   question: DraftQuestion;
@@ -174,6 +117,13 @@ function QuestionCard({
     onChange({ ...question, options: [...question.options, ""] });
   }
 
+  // Ensure default radio options are initialized properly
+  React.useEffect(() => {
+    if (hasOptions && question.options.length < 2) {
+      onChange({ ...question, options: ["", ""] });
+    }
+  }, [hasOptions, question, onChange]);
+
   function updateOption(i: number, value: string) {
     const newOptions = [...question.options];
     newOptions[i] = value;
@@ -191,233 +141,92 @@ function QuestionCard({
     <div
       ref={innerRef}
       {...draggableProps}
-      style={{
-        backgroundColor: "var(--color-bg-surface)",
-        border: `1px solid ${isDragging ? "var(--color-border-focus)" : "var(--color-border)"}`,
-        borderRadius: "var(--radius-lg)",
-        padding: "16px",
-        boxShadow: isDragging ? "var(--shadow-lg)" : "var(--shadow-xs)",
-        transition: "box-shadow var(--transition-fast), border-color var(--transition-fast)",
-        ...(draggableProps.style as React.CSSProperties | undefined),
-      }}
+      className="glass-panel rounded-lg p-6 transition-all duration-200"
     >
-      {/* Card header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          gap: "10px",
-          marginBottom: "14px",
-        }}
-      >
+      <div className="flex items-start gap-4">
         {/* Drag handle */}
-        <button
-          {...(dragHandleProps ?? {})}
-          type="button"
-          disabled={disabled}
-          aria-label={`Drag to reorder question ${index + 1}`}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "28px",
-            height: "28px",
-            borderRadius: "var(--radius-sm)",
-            border: "none",
-            backgroundColor: "transparent",
-            color: "var(--color-text-muted)",
-            cursor: disabled ? "not-allowed" : "grab",
-            flexShrink: 0,
-            marginTop: "5px",
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <circle cx="4.5" cy="3.5" r="1" fill="currentColor" />
-            <circle cx="9.5" cy="3.5" r="1" fill="currentColor" />
-            <circle cx="4.5" cy="7" r="1" fill="currentColor" />
-            <circle cx="9.5" cy="7" r="1" fill="currentColor" />
-            <circle cx="4.5" cy="10.5" r="1" fill="currentColor" />
-            <circle cx="9.5" cy="10.5" r="1" fill="currentColor" />
-          </svg>
-        </button>
+        <div {...(dragHandleProps ?? {})} className="drag-handle mt-2">
+          <span className="material-symbols-outlined select-none text-[20px]">
+            drag_indicator
+          </span>
+        </div>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {/* Question number + type */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px", flexWrap: "wrap" }}>
-            <span
-              style={{
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                color: "var(--color-text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-              }}
-            >
-              Q{index + 1}
-            </span>
-            <select
-              value={question.question_type}
-              onChange={(e) => {
-                const type = e.target.value as QuestionType;
-                const needsOptions = type === "single_choice" || type === "mcq";
-                onChange({
-                  ...question,
-                  question_type: type,
-                  options:
-                    needsOptions && question.options.length < 2
-                      ? ["", ""]
-                      : needsOptions
-                      ? question.options
-                      : [],
-                });
-              }}
+        <div className="flex-grow flex flex-col gap-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <span className="font-label-caps text-label-caps text-[var(--color-text-secondary)]">
+                Q{index + 1}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-[var(--color-bg-highest)] text-[var(--color-text-secondary)] font-label-caps text-label-caps text-[10px] uppercase tracking-wider">
+                {QUESTION_TYPE_LABELS[question.question_type]}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={onRemove}
               disabled={disabled}
-              aria-label={`Question ${index + 1} type`}
-              style={{
-                height: "26px",
-                padding: "0 24px 0 8px",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-full)",
-                backgroundColor: "var(--color-bg-subtle)",
-                color: "var(--color-text-secondary)",
-                fontSize: "0.75rem",
-                fontFamily: "var(--font-sans)",
-                cursor: "pointer",
-                appearance: "none",
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 4l3 3 3-3' stroke='%23999' strokeWidth='1.25' fill='none' strokeLinecap='round'/%3E%3C/svg%3E")`,
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "right 6px center",
-              }}
+              className="text-[var(--color-error)] hover:text-[var(--color-error-container)] transition-colors disabled:opacity-40"
             >
-              {(Object.keys(QUESTION_TYPE_LABELS) as QuestionType[]).map(
-                (type) => (
-                  <option key={type} value={type}>
-                    {QUESTION_TYPE_LABELS[type]}
-                  </option>
-                )
-              )}
-            </select>
+              <span className="material-symbols-outlined text-[20px]">delete</span>
+            </button>
           </div>
 
-          {/* Question text */}
-          <input
-            type="text"
-            value={question.question_text}
-            onChange={(e) =>
-              onChange({ ...question, question_text: e.target.value })
-            }
-            disabled={disabled}
-            placeholder="Type your question here"
-            aria-label={`Question ${index + 1} text`}
-            style={{
-              width: "100%",
-              height: "38px",
-              padding: "0 12px",
-              border: "1px solid var(--color-border)",
-              borderRadius: "var(--radius-md)",
-              backgroundColor: "var(--color-bg-surface)",
-              color: "var(--color-text-primary)",
-              fontSize: "0.9375rem",
-              fontFamily: "var(--font-sans)",
-              outline: "none",
-              transition: "border-color var(--transition-fast), box-shadow var(--transition-fast)",
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = "var(--color-border-focus)";
-              e.currentTarget.style.boxShadow = "0 0 0 3px hsl(231 48% 48% / 0.12)";
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = "var(--color-border)";
-              e.currentTarget.style.boxShadow = "none";
-            }}
-          />
-        </div>
-
-        {/* Delete question */}
-        <button
-          type="button"
-          onClick={onRemove}
-          disabled={disabled}
-          aria-label={`Delete question ${index + 1}`}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "32px",
-            height: "32px",
-            borderRadius: "var(--radius-md)",
-            border: "1px solid transparent",
-            backgroundColor: "transparent",
-            color: "var(--color-text-muted)",
-            cursor: disabled ? "not-allowed" : "pointer",
-            flexShrink: 0,
-            marginTop: "2px",
-          }}
-          onMouseEnter={(e) => {
-            if (!disabled) {
-              e.currentTarget.style.backgroundColor = "var(--color-error-subtle)";
-              e.currentTarget.style.borderColor = "var(--color-error-border)";
-              e.currentTarget.style.color = "var(--color-error)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-            e.currentTarget.style.borderColor = "transparent";
-            e.currentTarget.style.color = "var(--color-text-muted)";
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M3 3.5h10M6 3.5V2h4v1.5M5 6l.5 7M8 6v7M11 6l-.5 7" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Options */}
-      {hasOptions && (
-        <div
-          style={{
-            paddingLeft: "38px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-          }}
-        >
-          {question.options.map((opt, i) => (
-            <OptionRow
-              key={i}
-              index={i}
-              value={opt}
-              onChange={(v) => updateOption(i, v)}
-              onRemove={() => removeOption(i)}
-              canRemove={question.options.length > 2}
+          <div>
+            <label className="block font-label-caps text-label-caps text-[var(--color-text-secondary)] mb-2">
+              Question Text
+            </label>
+            <input
+              type="text"
+              value={question.question_text}
+              onChange={(e) =>
+                onChange({ ...question, question_text: e.target.value })
+              }
               disabled={disabled}
+              placeholder="Type your question here"
+              className="w-full bg-[#050505] border border-white/8 text-[var(--color-text-primary)] rounded px-4 py-3 font-body-sm text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all"
             />
-          ))}
-          <button
-            type="button"
-            onClick={addOption}
-            disabled={disabled}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "0.8125rem",
-              color: "var(--color-accent)",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "4px 0",
-              fontFamily: "var(--font-sans)",
-              width: "fit-content",
-            }}
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            Add option
-          </button>
+          </div>
+
+          {/* Options indents list */}
+          {hasOptions && (
+            <div className="pl-4 border-l border-white/10 flex flex-col gap-3 mt-2">
+              <label className="block font-label-caps text-label-caps text-[var(--color-text-secondary)] mb-1">
+                Options
+              </label>
+              {question.options.map((opt, i) => (
+                <OptionRow
+                  key={i}
+                  index={i}
+                  value={opt}
+                  onChange={(v) => updateOption(i, v)}
+                  onRemove={() => removeOption(i)}
+                  canRemove={question.options.length > 2}
+                  disabled={disabled}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={addOption}
+                disabled={disabled}
+                className="self-start text-[var(--color-primary)] font-label-caps text-label-caps flex items-center gap-1 mt-2 hover:text-[var(--color-primary-fixed)] transition-colors"
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span> Add option
+              </button>
+            </div>
+          )}
+
+          {question.question_type === "short_text" && (
+            <div className="mt-2">
+              <input
+                type="text"
+                disabled
+                placeholder="Participant will type short answer here..."
+                className="w-full bg-transparent border-b border-white/20 pb-2 font-body-sm text-sm text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed outline-none"
+              />
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -439,18 +248,20 @@ export function QuestionnaireBuilder({
       order_index: q.order_index,
     }))
   );
+  
+  const [selectedType, setSelectedType] = React.useState<QuestionType>("single_choice");
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveStatus, setSaveStatus] = React.useState<"idle" | "saved" | "error">("idle");
   const [saveError, setSaveError] = React.useState("");
 
-  function addQuestion(type: QuestionType = "single_choice") {
+  function addQuestion() {
     setQuestions((prev) => [
       ...prev,
       {
         id: generateLocalId(),
         question_text: "",
-        question_type: type,
-        options: type === "short_text" ? [] : ["", ""],
+        question_type: selectedType,
+        options: selectedType === "short_text" ? [] : ["", ""],
         order_index: prev.length,
       },
     ]);
@@ -511,8 +322,6 @@ export function QuestionnaireBuilder({
     try {
       const supabase = createClient();
 
-      // Delete all existing questions, then re-insert.
-      // Simpler than diffing for an internal tool.
       await supabase
         .from("questions")
         .delete()
@@ -534,7 +343,6 @@ export function QuestionnaireBuilder({
 
       if (error) throw error;
 
-      // Update local state with saved IDs
       setQuestions((prev) =>
         prev.map((q, i) => ({
           ...q,
@@ -557,26 +365,22 @@ export function QuestionnaireBuilder({
     return (
       <div
         role="status"
-        style={{
-          padding: "16px 20px",
-          borderRadius: "var(--radius-lg)",
-          backgroundColor: "var(--color-warning-subtle)",
-          border: "1px solid var(--color-warning-border)",
-          color: "var(--color-warning)",
-          fontSize: "0.9rem",
-          display: "flex",
-          alignItems: "flex-start",
-          gap: "10px",
-          marginBottom: "20px",
-        }}
+        className="glass-panel border-l-4 border-l-[var(--color-tertiary)] p-6 rounded-lg text-sm text-[var(--color-text-secondary)] mb-6 flex items-start gap-3"
       >
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" style={{ flexShrink: 0, marginTop: "1px" }}>
-          <path d="M9 2L1.5 15.5h15L9 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-          <path d="M9 7v4M9 12.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
+        <span className="material-symbols-outlined text-[var(--color-tertiary)] flex-shrink-0 mt-0.5">
+          warning
+        </span>
         <div>
-          <strong style={{ fontWeight: 600 }}>Questionnaire locked.</strong>{" "}
+          <strong className="text-[var(--color-text-primary)] font-semibold">Questionnaire locked.</strong>{" "}
           This event already has responses. The questionnaire cannot be edited to preserve data integrity.
+          <div className="mt-3">
+            <Link
+              href={`/events/${eventId}`}
+              className="text-[var(--color-primary)] hover:underline"
+            >
+              Back to event hub
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -584,6 +388,51 @@ export function QuestionnaireBuilder({
 
   return (
     <div>
+      {/* Controls */}
+      <div className="glass-panel rounded-lg p-6 mb-6 flex flex-col sm:flex-row gap-4 items-end sm:items-center justify-between">
+        <div className="flex-grow w-full sm:w-auto">
+          <label className="block font-label-caps text-label-caps text-[var(--color-text-secondary)] mb-2">
+            Question Type
+          </label>
+          <div className="relative">
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value as QuestionType)}
+              className="w-full appearance-none bg-[#050505] border border-white/8 text-[var(--color-text-primary)] rounded-full py-3 pl-4 pr-10 font-body-sm text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all cursor-pointer"
+            >
+              {(Object.keys(QUESTION_TYPE_LABELS) as QuestionType[]).map((type) => (
+                <option key={type} value={type}>
+                  {QUESTION_TYPE_LABELS[type]}
+                </option>
+              ))}
+            </select>
+            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none">
+              expand_more
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={addQuestion}
+          disabled={isSaving}
+          className="w-full sm:w-auto btn-primary bg-[var(--color-primary)] text-[var(--color-on-primary-fixed-variant)] rounded-full px-6 py-3 font-label-caps text-label-caps flex items-center justify-center gap-2 shrink-0 transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          Add question
+        </button>
+      </div>
+
+      {/* Validation error */}
+      {saveError && (
+        <div
+          role="alert"
+          className="p-4 bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-[var(--color-error)] text-sm rounded-lg mb-6 flex items-center gap-2"
+        >
+          <span className="material-symbols-outlined text-lg">error</span>
+          {saveError}
+        </div>
+      )}
+
       {/* Questions list */}
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="questions">
@@ -591,20 +440,11 @@ export function QuestionnaireBuilder({
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
-              style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "16px" }}
+              className="flex flex-col gap-6 mb-6"
             >
               {questions.length === 0 && (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "40px 24px",
-                    border: "2px dashed var(--color-border)",
-                    borderRadius: "var(--radius-lg)",
-                    color: "var(--color-text-muted)",
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  No questions yet. Add your first question below.
+                <div className="text-center py-16 border-2 border-dashed border-white/10 rounded-lg text-[var(--color-text-secondary)]">
+                  No questions yet. Add your first question above.
                 </div>
               )}
 
@@ -632,92 +472,13 @@ export function QuestionnaireBuilder({
         </Droppable>
       </DragDropContext>
 
-      {/* Add question buttons */}
-      <div
-        style={{
-          display: "flex",
-          gap: "8px",
-          flexWrap: "wrap",
-          marginBottom: "24px",
-        }}
-      >
-        {(["single_choice", "mcq", "short_text"] as QuestionType[]).map((type) => (
-          <button
-            key={type}
-            type="button"
-            onClick={() => addQuestion(type)}
-            disabled={isSaving}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              height: "34px",
-              padding: "0 12px",
-              borderRadius: "var(--radius-md)",
-              border: "1px dashed var(--color-border)",
-              backgroundColor: "transparent",
-              color: "var(--color-text-secondary)",
-              fontSize: "0.8125rem",
-              fontFamily: "var(--font-sans)",
-              cursor: "pointer",
-              transition: "border-color var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "var(--color-accent)";
-              e.currentTarget.style.color = "var(--color-accent)";
-              e.currentTarget.style.backgroundColor = "var(--color-accent-subtle)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--color-border)";
-              e.currentTarget.style.color = "var(--color-text-secondary)";
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            {QUESTION_TYPE_LABELS[type]}
-          </button>
-        ))}
-      </div>
-
-      {/* Validation error */}
-      {saveError && (
-        <div
-          role="alert"
-          style={{
-            padding: "10px 14px",
-            borderRadius: "var(--radius-md)",
-            backgroundColor: "var(--color-error-subtle)",
-            border: "1px solid var(--color-error-border)",
-            color: "var(--color-error)",
-            fontSize: "0.875rem",
-            marginBottom: "16px",
-          }}
-        >
-          {saveError}
-        </div>
-      )}
-
-      {/* Save bar */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "12px",
-          padding: "14px 16px",
-          backgroundColor: "var(--color-bg-surface)",
-          border: "1px solid var(--color-border)",
-          borderRadius: "var(--radius-lg)",
-          flexWrap: "wrap",
-        }}
-      >
-        <span style={{ fontSize: "0.875rem", color: "var(--color-text-muted)" }}>
-          {questions.length} question{questions.length !== 1 ? "s" : ""}
+      {/* Sticky footer Save bar */}
+      <div className="fixed bottom-0 left-0 w-full glass-panel border-t border-white/10 p-4 md:px-8 md:py-6 z-40 flex flex-col md:flex-row items-center justify-between gap-4">
+        <span className="text-sm text-[var(--color-text-secondary)] font-body-sm">
+          {questions.length} question{questions.length !== 1 ? "s" : ""} configured
           {saveStatus === "saved" && (
-            <span style={{ color: "var(--color-success)", marginLeft: "10px" }}>
-              ✓ Saved
+            <span className="text-[var(--color-secondary)] ml-3 font-semibold flex-inline items-center gap-1">
+              ✓ Saved successfully
             </span>
           )}
         </span>
@@ -725,6 +486,7 @@ export function QuestionnaireBuilder({
           onClick={handleSave}
           isLoading={isSaving}
           disabled={isSaving || questions.length === 0}
+          className="w-full md:w-auto btn-primary bg-[var(--color-primary)] text-[var(--color-on-primary-fixed-variant)] rounded-full px-8 py-4 font-label-caps text-label-caps text-sm transition-all"
         >
           {isSaving ? "Saving…" : "Save questionnaire"}
         </Button>
@@ -732,3 +494,4 @@ export function QuestionnaireBuilder({
     </div>
   );
 }
+

@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import type { Question } from "@/lib/types";
 
@@ -29,7 +28,6 @@ type FormState = "idle" | "submitting" | "success" | "already_submitted" | "erro
 export function ParticipantForm({
   eventId,
   eventTitle,
-  eventType,
   questions,
 }: ParticipantFormProps) {
   const [formState, setFormState] = React.useState<FormState>("idle");
@@ -152,28 +150,12 @@ export function ParticipantForm({
   // ── Already submitted ──────────────────────────────────────
   if (formState === "already_submitted") {
     return (
-      <div style={{ textAlign: "center", padding: "48px 24px" }}>
-        <div
-          style={{
-            width: "56px",
-            height: "56px",
-            borderRadius: "var(--radius-xl)",
-            backgroundColor: "var(--color-warning-subtle)",
-            border: "1px solid var(--color-warning-border)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 16px",
-            color: "var(--color-warning)",
-          }}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 9v4M12 16.5v.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
-          </svg>
+      <div className="text-center py-12 px-6 animate-fade-slide-up">
+        <div className="w-14 h-14 rounded-[var(--radius-xl)] bg-[var(--color-tertiary)]/10 border border-[var(--color-tertiary)]/20 flex items-center justify-center mx-auto mb-4 text-[var(--color-tertiary)]">
+          <span className="material-symbols-outlined text-3xl">warning</span>
         </div>
-        <h2 style={{ fontSize: "1.25rem", marginBottom: "8px" }}>Already submitted</h2>
-        <p style={{ color: "var(--color-text-muted)", maxWidth: "320px", margin: "0 auto", fontSize: "0.9rem" }}>
+        <h2 className="text-xl font-semibold mb-2 text-[var(--color-text-primary)]">Already submitted</h2>
+        <p className="text-[var(--color-text-secondary)] max-w-[320px] mx-auto text-sm">
           You have already submitted feedback for this event from this browser. Thank you for your response!
         </p>
       </div>
@@ -183,30 +165,13 @@ export function ParticipantForm({
   // ── Success ────────────────────────────────────────────────
   if (formState === "success") {
     return (
-      <div style={{ textAlign: "center", padding: "48px 24px" }}>
-        <div
-          style={{
-            width: "64px",
-            height: "64px",
-            borderRadius: "var(--radius-xl)",
-            backgroundColor: "var(--color-success-subtle)",
-            border: "1px solid var(--color-success-border)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 20px",
-            color: "var(--color-success)",
-          }}
-        >
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-            <path d="M5 14l7 7 11-11" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+      <div className="text-center py-12 px-6 animate-fade-slide-up">
+        <div className="w-16 h-16 rounded-[var(--radius-xl)] bg-[var(--color-secondary)]/10 border border-[var(--color-secondary)]/20 flex items-center justify-center mx-auto mb-5 text-[var(--color-secondary)]">
+          <span className="material-symbols-outlined text-4xl">check_circle</span>
         </div>
-        <h2 style={{ fontSize: "1.5rem", marginBottom: "8px" }}>Thank you!</h2>
-        <p style={{ color: "var(--color-text-secondary)", maxWidth: "360px", margin: "0 auto", fontSize: "0.95rem", lineHeight: 1.7 }}>
-          Your feedback for{" "}
-          <strong style={{ color: "var(--color-text-primary)" }}>{eventTitle}</strong> has been
-          recorded. The CSA team will review your responses.
+        <h2 className="text-2xl font-bold mb-2 text-[var(--color-text-primary)]">Thank you!</h2>
+        <p className="text-[var(--color-text-secondary)] max-w-sm mx-auto text-base leading-relaxed">
+          Your feedback for <strong className="text-[var(--color-text-primary)]">{eventTitle}</strong> has been recorded. The CSA team will review your responses.
         </p>
       </div>
     );
@@ -214,232 +179,154 @@ export function ParticipantForm({
 
   // ── Form ───────────────────────────────────────────────────
   return (
-    <form
-      onSubmit={handleSubmit}
-      noValidate
-      aria-label={`Feedback form for ${eventTitle}`}
-    >
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-        {questions.map((question, idx) => (
-          <div
-            key={question.id}
-            id={`question-${question.id}`}
-            style={{
-              backgroundColor: "var(--color-bg-surface)",
-              border: `1px solid ${validationErrors[question.id] ? "var(--color-error-border)" : "var(--color-border)"}`,
-              borderRadius: "var(--radius-lg)",
-              padding: "20px",
-              transition: "border-color var(--transition-fast)",
-            }}
-          >
-            <fieldset style={{ border: "none", padding: 0, margin: 0 }}>
-              <legend
-                style={{
-                  fontSize: "0.9375rem",
-                  fontWeight: 600,
-                  color: "var(--color-text-primary)",
-                  marginBottom: "14px",
-                  lineHeight: 1.45,
-                  float: "left",
-                  width: "100%",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    color: "var(--color-text-muted)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    display: "block",
-                    marginBottom: "4px",
-                  }}
-                >
-                  Q{idx + 1} ·{" "}
-                  {question.question_type === "single_choice"
-                    ? "Choose one"
-                    : question.question_type === "mcq"
-                    ? "Choose all that apply"
-                    : "Short answer"}
-                </span>
-                {question.question_text}
-              </legend>
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
+        {questions.map((question, idx) => {
+          const hasError = !!validationErrors[question.id];
+          const delayStyle = { animationDelay: `${(idx + 2) * 0.1}s` };
 
-              <div style={{ clear: "both" }}>
-                {/* Single choice — radio */}
-                {question.question_type === "single_choice" &&
-                  (question.options ?? []).map((option) => (
-                    <label
-                      key={option}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        padding: "10px 12px",
-                        borderRadius: "var(--radius-md)",
-                        cursor: "pointer",
-                        transition: "background-color var(--transition-fast)",
-                        backgroundColor:
-                          answers[question.id] === option
-                            ? "var(--color-accent-subtle)"
-                            : "transparent",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (answers[question.id] !== option) {
-                          e.currentTarget.style.backgroundColor = "var(--color-bg-subtle)";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (answers[question.id] !== option) {
-                          e.currentTarget.style.backgroundColor = "transparent";
-                        }
-                      }}
-                    >
-                      <input
-                        type="radio"
-                        name={`question-${question.id}`}
-                        value={option}
-                        checked={answers[question.id] === option}
-                        onChange={() => setSingleAnswer(question.id, option)}
-                        style={{ accentColor: "var(--color-accent)", width: "16px", height: "16px", flexShrink: 0 }}
-                        aria-describedby={validationErrors[question.id] ? `error-${question.id}` : undefined}
-                      />
-                      <span style={{ fontSize: "0.9375rem", color: "var(--color-text-primary)" }}>
-                        {option}
-                      </span>
-                    </label>
-                  ))}
+          return (
+            <div
+              key={question.id}
+              id={`question-${question.id}`}
+              style={delayStyle}
+              className={`glass-panel rounded-lg p-6 stagger-in transition-all duration-300 ${
+                hasError ? "border-[var(--color-error)]/30 shadow-[0_0_15px_rgba(255,180,171,0.05)]" : "focus-within:border-[var(--color-primary)]/20 focus-within:shadow-[0_0_15px_rgba(174,198,255,0.1)]"
+              }`}
+            >
+              <fieldset className="border-none p-0 m-0">
+                <legend className="block w-full float-left text-[15px] font-semibold text-[var(--color-text-primary)] mb-4 leading-relaxed">
+                  <span className="block font-label-caps text-xs text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
+                    Q{idx + 1} ·{" "}
+                    {question.question_type === "single_choice"
+                      ? "Choose one"
+                      : question.question_type === "mcq"
+                      ? "Choose all that apply"
+                      : "Short answer"}
+                  </span>
+                  {question.question_text}
+                </legend>
 
-                {/* MCQ — checkboxes */}
-                {question.question_type === "mcq" &&
-                  (question.options ?? []).map((option) => {
-                    const selected = ((answers[question.id] as string[]) ?? []).includes(option);
-                    return (
-                      <label
-                        key={option}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                          padding: "10px 12px",
-                          borderRadius: "var(--radius-md)",
-                          cursor: "pointer",
-                          transition: "background-color var(--transition-fast)",
-                          backgroundColor: selected ? "var(--color-accent-subtle)" : "transparent",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!selected) e.currentTarget.style.backgroundColor = "var(--color-bg-subtle)";
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!selected) e.currentTarget.style.backgroundColor = "transparent";
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          value={option}
-                          checked={selected}
-                          onChange={() => toggleMultiAnswer(question.id, option)}
-                          style={{ accentColor: "var(--color-accent)", width: "16px", height: "16px", flexShrink: 0 }}
-                          aria-describedby={validationErrors[question.id] ? `error-${question.id}` : undefined}
-                        />
-                        <span style={{ fontSize: "0.9375rem", color: "var(--color-text-primary)" }}>
-                          {option}
-                        </span>
-                      </label>
-                    );
-                  })}
+                <div className="clear-both flex flex-col gap-2.5">
+                  {/* Single choice — custom radios */}
+                  {question.question_type === "single_choice" &&
+                    (question.options ?? []).map((option) => {
+                      const isChecked = answers[question.id] === option;
+                      return (
+                        <label
+                          key={option}
+                          className={`flex items-center gap-3 p-3.5 rounded-lg cursor-pointer border transition-all ${
+                            isChecked
+                              ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)]/30 text-[var(--color-primary)]"
+                              : "bg-transparent border-white/5 text-[var(--color-text-primary)] hover:bg-white/5"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name={`question-${question.id}`}
+                            value={option}
+                            checked={isChecked}
+                            onChange={() => setSingleAnswer(question.id, option)}
+                            className="sr-only"
+                          />
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                            isChecked ? "border-[var(--color-primary)]" : "border-white/20"
+                          }`}>
+                            {isChecked && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]"></div>
+                            )}
+                          </div>
+                          <span className="text-sm font-medium">{option}</span>
+                        </label>
+                      );
+                    })}
 
-                {/* Short text — textarea */}
-                {question.question_type === "short_text" && (
-                  <textarea
-                    value={(answers[question.id] as string) ?? ""}
-                    onChange={(e) => setSingleAnswer(question.id, e.target.value)}
-                    rows={4}
-                    aria-label={question.question_text}
-                    aria-describedby={validationErrors[question.id] ? `error-${question.id}` : undefined}
-                    aria-invalid={!!validationErrors[question.id]}
-                    placeholder="Your response…"
-                    style={{
-                      width: "100%",
-                      padding: "10px 12px",
-                      border: `1px solid ${validationErrors[question.id] ? "var(--color-error-border)" : "var(--color-border)"}`,
-                      borderRadius: "var(--radius-md)",
-                      backgroundColor: "var(--color-bg-subtle)",
-                      color: "var(--color-text-primary)",
-                      fontSize: "0.9375rem",
-                      fontFamily: "var(--font-sans)",
-                      resize: "vertical",
-                      outline: "none",
-                      lineHeight: 1.6,
-                      transition: "border-color var(--transition-fast), box-shadow var(--transition-fast)",
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = "var(--color-border-focus)";
-                      e.currentTarget.style.boxShadow = "0 0 0 3px hsl(231 48% 48% / 0.12)";
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = validationErrors[question.id]
-                        ? "var(--color-error-border)"
-                        : "var(--color-border)";
-                      e.currentTarget.style.boxShadow = "none";
-                    }}
-                  />
+                  {/* MCQ — custom checkboxes */}
+                  {question.question_type === "mcq" &&
+                    (question.options ?? []).map((option) => {
+                      const selectedOptions = (answers[question.id] as string[]) ?? [];
+                      const isChecked = selectedOptions.includes(option);
+                      return (
+                        <label
+                          key={option}
+                          className={`flex items-center gap-3 p-3.5 rounded-lg cursor-pointer border transition-all ${
+                            isChecked
+                              ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)]/30 text-[var(--color-primary)]"
+                              : "bg-transparent border-white/5 text-[var(--color-text-primary)] hover:bg-white/5"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            value={option}
+                            checked={isChecked}
+                            onChange={() => toggleMultiAnswer(question.id, option)}
+                            className="sr-only"
+                          />
+                          <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                            isChecked ? "border-[var(--color-primary)] bg-[var(--color-primary)]" : "border-white/20"
+                          }`}>
+                            {isChecked && (
+                              <span className="material-symbols-outlined text-[12px] text-[var(--color-on-primary)] font-bold">
+                                check
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-sm font-medium">{option}</span>
+                        </label>
+                      );
+                    })}
+
+                  {/* Short text — custom textarea input */}
+                  {question.question_type === "short_text" && (
+                    <textarea
+                      value={(answers[question.id] as string) ?? ""}
+                      onChange={(e) => setSingleAnswer(question.id, e.target.value)}
+                      rows={4}
+                      placeholder="Your response…"
+                      className={`w-full bg-[#050505] border text-[var(--color-text-primary)] rounded-lg p-3.5 font-body-sm text-sm focus:outline-none transition-all ${
+                        hasError
+                          ? "border-[var(--color-error)]/30 focus:border-[var(--color-error)] focus:ring-4 focus:ring-[var(--color-error)]/10"
+                          : "border-white/8 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10"
+                      }`}
+                    />
+                  )}
+                </div>
+
+                {/* Validation error text */}
+                {hasError && (
+                  <p className="text-[11px] text-[var(--color-error)] mt-2 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm">error</span>
+                    {validationErrors[question.id]}
+                  </p>
                 )}
-              </div>
-
-              {/* Validation error */}
-              {validationErrors[question.id] && (
-                <p
-                  id={`error-${question.id}`}
-                  role="alert"
-                  style={{
-                    fontSize: "0.8125rem",
-                    color: "var(--color-error)",
-                    marginTop: "8px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                  }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                    <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 10.5a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5zm.75-3.25a.75.75 0 0 1-1.5 0v-3a.75.75 0 0 1 1.5 0v3z" />
-                  </svg>
-                  {validationErrors[question.id]}
-                </p>
-              )}
-            </fieldset>
-          </div>
-        ))}
+              </fieldset>
+            </div>
+          );
+        })}
       </div>
 
       {/* Submit error */}
       {submitError && (
         <div
           role="alert"
-          style={{
-            marginTop: "16px",
-            padding: "10px 14px",
-            borderRadius: "var(--radius-md)",
-            backgroundColor: "var(--color-error-subtle)",
-            border: "1px solid var(--color-error-border)",
-            color: "var(--color-error)",
-            fontSize: "0.875rem",
-          }}
+          className="p-4 bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-[var(--color-error)] text-sm rounded-lg flex items-center gap-2"
         >
+          <span className="material-symbols-outlined text-lg">error</span>
           {submitError}
         </div>
       )}
 
-      <div style={{ marginTop: "24px" }}>
+      {/* Submit bar */}
+      <div className="mt-4 stagger-in" style={{ animationDelay: `${(questions.length + 2) * 0.1}s` }}>
         <Button
           type="submit"
           size="lg"
           isLoading={formState === "submitting"}
-          style={{ width: "100%" }}
+          className="w-full btn-primary bg-[var(--color-primary)] text-[var(--color-on-primary-fixed-variant)] rounded-full py-4 text-sm font-label-caps tracking-wider transition-all"
         >
           {formState === "submitting" ? "Submitting…" : "Submit feedback"}
         </Button>
-        <p style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)", textAlign: "center", marginTop: "10px" }}>
+        <p className="text-xs text-[var(--color-text-secondary)] text-center mt-3">
           Your response is anonymous and will be visible only to CSA members.
         </p>
       </div>

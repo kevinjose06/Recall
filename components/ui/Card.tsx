@@ -5,7 +5,7 @@ interface CardProps {
   style?: React.CSSProperties;
   className?: string;
   as?: React.ElementType;
-  /** Adds a hover lift effect — use for clickable cards */
+  /** Adds a hover lift + glow effect — use for clickable cards */
   interactive?: boolean;
   padding?: "none" | "sm" | "md" | "lg";
 }
@@ -14,7 +14,7 @@ const paddingMap = {
   none: "0",
   sm: "12px",
   md: "20px",
-  lg: "28px",
+  lg: "24px",
 };
 
 export function Card({
@@ -27,30 +27,33 @@ export function Card({
 }: CardProps) {
   return (
     <As
-      className={className}
+      className={`glass-panel${className ? ` ${className}` : ""}`}
       data-interactive={interactive ? "true" : undefined}
       style={{
-        backgroundColor: "rgba(245, 245, 235, 0.95)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        border: "1px solid rgba(8, 72, 110, 0.22)",
+        /* glassmorphism: obsidian glass */
+        background: "rgba(17, 17, 17, 0.5)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
         borderRadius: "var(--radius-lg)",
         padding: paddingMap[padding],
         boxShadow: interactive
           ? "var(--recall-card-shadow, var(--shadow-sm))"
           : "var(--shadow-sm)",
-        transition: "box-shadow var(--transition-base), transform var(--transition-base)",
+        transition:
+          "box-shadow var(--transition-base), transform var(--transition-base), border-color var(--transition-base)",
         transform: interactive
           ? "var(--recall-card-transform, translateY(0))"
           : "translateY(0)",
         cursor: interactive ? "pointer" : undefined,
-        color: "#08486e",
-        ["--color-text-primary" as any]: "#08486e",
-        ["--color-text-secondary" as any]: "rgba(8, 72, 110, 0.85)",
-        ["--color-text-muted" as any]: "rgba(8, 72, 110, 0.65)",
-        ["--color-border" as any]: "rgba(8, 72, 110, 0.15)",
-        ["--color-button-bg" as any]: "#000000",
-        ["--color-button-text" as any]: "#f5f5eb",
+        /* text token overrides — stay on-surface inside dark cards */
+        color: "var(--color-on-surface)",
+        ["--color-text-primary" as any]: "var(--color-on-surface)",
+        ["--color-text-secondary" as any]: "var(--color-on-surface-variant)",
+        ["--color-text-muted" as any]: "var(--color-outline)",
+        ["--color-border" as any]: "rgba(255, 255, 255, 0.08)",
+        ["--color-button-bg" as any]: "#0070f3",
+        ["--color-button-text" as any]: "#ffffff",
         ...style,
       } as React.CSSProperties}
     >
@@ -72,7 +75,7 @@ export function CardHeader({
     <div
       style={{
         paddingBottom: "16px",
-        borderBottom: "1px solid var(--color-border)",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
         marginBottom: "16px",
         ...style,
       }}
@@ -94,7 +97,8 @@ export function CardTitle({
       style={{
         fontSize: "1.0625rem",
         fontWeight: 600,
-        color: "#08486e",
+        color: "var(--color-on-surface)",
+        letterSpacing: "-0.01em",
         ...style,
       }}
     >

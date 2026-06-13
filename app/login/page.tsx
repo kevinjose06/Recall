@@ -63,47 +63,44 @@ export default function LoginPage() {
             flexDirection: "column",
             alignItems: "center",
             gap: "16px",
-            marginBottom: "36px",
+            marginBottom: "40px",
           }}
         >
           <img
             src="/csa-logo.png?v=2"
             alt="CSA logo"
-            width={120}
-            height={120}
-            style={{ objectFit: "contain", filter: "brightness(0) invert(1)" }}
+            width={72}
+            height={72}
+            style={{ objectFit: "contain", filter: "brightness(0) invert(1)", opacity: 0.9 }}
           />
 
           <h1
             style={{
               fontSize: "1.75rem",
               fontWeight: 700,
-              color: "#f5f5eb",
-              letterSpacing: "-0.02em",
+              color: "#e5e2e1",
+              letterSpacing: "-0.03em",
+              textAlign: "center",
             }}
           >
             Sign in to Recall
           </h1>
+          <p style={{ fontSize: "0.875rem", color: "#e5e2e1", opacity: 1, margin: 0, textAlign: "center" }}>
+            CSA · RIT Kottayam
+          </p>
+
         </div>
 
-        {/* Form card — light cream */}
+        {/* Form card — Stitch obsidian glass */}
         <div
           style={{
-            backgroundColor: "rgba(245, 245, 235, 0.95)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(8, 72, 110, 0.22)",
-            borderRadius: "var(--radius-xl)",
+            background: "rgba(17, 17, 17, 0.6)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: "var(--radius-2xl)",
             padding: "32px",
-            boxShadow: "0 24px 48px rgba(0,0,0,0.2), 0 0 0 1px rgba(8, 72, 110, 0.15)",
-            // Local color overrides for readability on the light mint card
-            color: "#08486e",
-            ["--color-text-primary" as any]: "#08486e",
-            ["--color-text-secondary" as any]: "rgba(8, 72, 110, 0.85)",
-            ["--color-text-muted" as any]: "rgba(8, 72, 110, 0.65)",
-            ["--color-border" as any]: "rgba(8, 72, 110, 0.18)",
-            ["--color-button-bg" as any]: "#000000",
-            ["--color-button-text" as any]: "#f5f5eb",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
           }}
         >
           <form

@@ -72,15 +72,15 @@ export function SingleChoiceChart({
               name,
             ]}
             contentStyle={{
-              backgroundColor: "var(--color-bg-surface)",
-              border: "1px solid var(--color-border)",
+              backgroundColor: "rgba(17, 17, 17, 0.92)",
+              border: "1px solid rgba(255, 255, 255, 0.10)",
               borderRadius: "var(--radius-md)",
               fontSize: "0.875rem",
-              color: "var(--color-text-primary)",
+              color: "#e5e2e1",
             }}
           />
           <Legend
-            wrapperStyle={{ fontSize: "0.8125rem", color: "var(--color-text-secondary)" }}
+            wrapperStyle={{ fontSize: "0.8125rem", color: "#c1c6d7" }}
           />
         </PieChart>
       </ResponsiveContainer>
@@ -88,7 +88,7 @@ export function SingleChoiceChart({
         style={{
           textAlign: "center",
           fontSize: "0.8125rem",
-          color: "var(--color-text-muted)",
+          color: "var(--color-outline)",
           marginTop: "8px",
         }}
       >
@@ -112,7 +112,7 @@ export function MCQChart({
       <p
         style={{
           fontSize: "0.8125rem",
-          color: "var(--color-text-muted)",
+          color: "var(--color-outline)",
           marginBottom: "12px",
           fontStyle: "italic",
         }}
@@ -128,12 +128,12 @@ export function MCQChart({
           <CartesianGrid
             strokeDasharray="3 3"
             horizontal={false}
-            stroke="var(--color-border)"
+            stroke="rgba(255, 255, 255, 0.06)"
           />
           <XAxis
             type="number"
-            tick={{ fontSize: 12, fill: "var(--color-text-muted)" }}
-            axisLine={{ stroke: "var(--color-border)" }}
+            tick={{ fontSize: 12, fill: "#8b90a0" }}
+            axisLine={{ stroke: "rgba(255, 255, 255, 0.08)" }}
             tickLine={false}
             allowDecimals={false}
           />
@@ -141,7 +141,7 @@ export function MCQChart({
             type="category"
             dataKey="option"
             width={120}
-            tick={{ fontSize: 12, fill: "var(--color-text-secondary)" }}
+            tick={{ fontSize: 12, fill: "#c1c6d7" }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(v: string) =>
@@ -154,11 +154,11 @@ export function MCQChart({
               "Count",
             ]}
             contentStyle={{
-              backgroundColor: "var(--color-bg-surface)",
-              border: "1px solid var(--color-border)",
+              backgroundColor: "rgba(17, 17, 17, 0.92)",
+              border: "1px solid rgba(255, 255, 255, 0.10)",
               borderRadius: "var(--radius-md)",
               fontSize: "0.875rem",
-              color: "var(--color-text-primary)",
+              color: "#e5e2e1",
             }}
           />
           <Bar
@@ -194,7 +194,7 @@ export function ShortTextList({
       }}
     >
       {data.length === 0 ? (
-        <p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", textAlign: "center", padding: "24px 0" }}>
+        <p style={{ color: "var(--color-outline)", fontSize: "0.9rem", textAlign: "center", padding: "24px 0" }}>
           No responses yet.
         </p>
       ) : (
@@ -203,15 +203,15 @@ export function ShortTextList({
             key={i}
             style={{
               padding: "12px 14px",
-              backgroundColor: "var(--color-bg-subtle)",
-              border: "1px solid var(--color-border)",
+              backgroundColor: "rgba(174, 198, 255, 0.04)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
               borderRadius: "var(--radius-md)",
             }}
           >
             <p
               style={{
                 fontSize: "0.9rem",
-                color: "var(--color-text-primary)",
+                color: "#e5e2e1",
                 marginBottom: "6px",
                 lineHeight: 1.6,
               }}
@@ -222,7 +222,7 @@ export function ShortTextList({
               dateTime={item.submitted_at}
               style={{
                 fontSize: "0.75rem",
-                color: "var(--color-text-muted)",
+                color: "var(--color-outline)",
               }}
             >
               {new Date(item.submitted_at).toLocaleString("en-IN", {

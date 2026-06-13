@@ -105,34 +105,23 @@ export default function NewEventPage() {
   }
 
   return (
-    <div className="page-container--narrow" style={{ paddingTop: "0.75rem" }}>
+    <div className="page-container--narrow" style={{ paddingTop: "0px" }}>
       {/* Back nav */}
-      <button
+      <Button
         type="button"
+        variant="primary"
+        size="sm"
         onClick={() => router.back()}
-        className="slide-fill-btn"
+        leftIcon={<BackIcon />}
         style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "6px",
-          fontSize: "0.875rem",
-          color: "rgba(245, 245, 235, 0.78)",
-          backgroundColor: "transparent",
-          border: "1px solid rgba(245, 245, 235, 0.15)",
-          borderRadius: "var(--radius-full)",
-          padding: "8px 18px",
-          cursor: "pointer",
-          fontFamily: "var(--font-sans)",
-          marginBottom: "20px",
-          transition: "border-color var(--transition-fast), color var(--transition-fast)",
+          marginBottom: "12px",
         }}
       >
-        <BackIcon />
         Back
-      </button>
+      </Button>
 
-      <div style={{ marginBottom: "16px" }}>
-        <h1 style={{ fontSize: "1.5rem", marginBottom: "0", color: "#f5f5eb" }}>New event</h1>
+      <div style={{ marginBottom: "12px" }}>
+        <h1 style={{ fontSize: "1.5rem", marginBottom: "0", color: "var(--color-on-surface)", letterSpacing: "-0.02em" }}>New event</h1>
       </div>
 
       <Card>

@@ -1,15 +1,23 @@
 import type { Metadata } from "next";
-import { Google_Sans } from "next/font/google";
+import { Inter, Geist } from "next/font/google";
 import "./globals.css";
 import { PixelBlastBackground } from "@/components/ui/PixelBlastBackground";
 
-// Google Sans has a variable font axis — use that for best performance.
-const googleSans = Google_Sans({
+// Inter — primary typeface for body & headlines
+const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   style: ["normal"],
   display: "swap",
-  variable: "--font-google-sans",
+  variable: "--font-inter",
+});
+
+// Geist — label / caps typeface
+const geist = Geist({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  variable: "--font-geist",
 });
 
 export const metadata: Metadata = {
@@ -31,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={googleSans.variable}>
+    <html lang="en" className={`${inter.variable} ${geist.variable}`}>
       <body>
         {/* Fixed animated background — persists across all route changes */}
         <PixelBlastBackground />

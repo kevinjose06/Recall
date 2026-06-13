@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react";
+
 
 // ─── Types ────────────────────────────────────────────────────
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -17,27 +20,35 @@ function getVariantStyle(variant: ButtonVariant): React.CSSProperties {
   switch (variant) {
     case "primary":
       return {
-        backgroundColor: "var(--color-button-bg)",
-        color: "var(--color-button-text)",
-        border: "1px solid transparent",
+        backgroundColor: "#002e6b",                   /* Dark Blue background */
+        color: "#ffffff",                             /* White text */
+        borderStyle: "solid",
+        borderWidth: "1px",
+        borderColor: "transparent",
       };
     case "secondary":
       return {
-        backgroundColor: "var(--color-bg-subtle)",
+        backgroundColor: "rgba(123, 164, 255, 0.06)",
         color: "var(--color-text-primary)",
-        border: "1px solid var(--color-border)",
+        borderStyle: "solid",
+        borderWidth: "1px",
+        borderColor: "var(--color-border)",
       };
     case "ghost":
       return {
         backgroundColor: "transparent",
         color: "var(--color-text-secondary)",
-        border: "1px solid transparent",
+        borderStyle: "solid",
+        borderWidth: "1px",
+        borderColor: "transparent",
       };
     case "danger":
       return {
         backgroundColor: "var(--color-error-subtle)",
         color: "var(--color-error)",
-        border: "1px solid var(--color-error-border)",
+        borderStyle: "solid",
+        borderWidth: "1px",
+        borderColor: "var(--color-error-border)",
       };
   }
 }
@@ -89,7 +100,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const isDisabled = disabled || isLoading;
+    const [hovered, setHovered] = React.useState(false);
 
+    const baseVariantStyles = getVariantStyle(variant);
+
+    // Dynamic style calculation ensuring slide overlay behavior
     const combinedStyle: React.CSSProperties = {
       display: "inline-flex",
       alignItems: "center",
@@ -98,35 +113,89 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       fontWeight: 500,
       cursor: isDisabled ? "not-allowed" : "pointer",
       opacity: isDisabled ? 0.55 : 1,
-      transition: "background-color var(--transition-fast), opacity var(--transition-fast), box-shadow var(--transition-fast)",
+      transition: "color 0.3s ease, border-color 0.3s ease, opacity 0.2s ease, transform 0.1s ease",
       textDecoration: "none",
       whiteSpace: "nowrap",
       flexShrink: 0,
-      ...getVariantStyle(variant),
+      position: "relative",
+      overflow: "hidden",
+      zIndex: 1,
+      boxShadow: "0 2px 6px rgba(0, 0, 0, 0.2)",
+      ...baseVariantStyles,
       ...getSizeStyle(size),
       ...style,
     };
 
+    // Hover dynamic color overrides to match slider flow
+    if (hovered && !isDisabled) {
+      if (variant === "primary") {
+        combinedStyle.color = "#001a43";
+        combinedStyle.borderColor = "#c1d6ff";
+      } else if (variant === "secondary") {
+        combinedStyle.color = "var(--color-text-primary)";
+        combinedStyle.borderColor = "var(--color-border-focus)";
+      } else {
+        combinedStyle.color = "var(--color-text-primary)";
+      }
+    }
+
     return (
       <button
         ref={ref}
-        className={`${className || ""} slide-fill-btn`}
+        className={className || ""}
         disabled={isDisabled}
         style={combinedStyle}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         aria-busy={isLoading}
         {...props}
       >
+        {/* Sliding flow overlay */}
+        {variant === "primary" && (
+          <span
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              backgroundColor: "#c1d6ff", // light indigo
+              transform: hovered && !isDisabled ? "scaleX(1)" : "scaleX(0)",
+              transformOrigin: "left",
+              transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+              zIndex: -1,
+            }}
+          />
+        )}
+        {variant === "secondary" && (
+          <span
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              backgroundColor: "rgba(123, 164, 255, 0.12)",
+              transform: hovered && !isDisabled ? "scaleX(1)" : "scaleX(0)",
+              transformOrigin: "left",
+              transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+              zIndex: -1,
+            }}
+          />
+        )}
         {isLoading ? (
           <Spinner size={size === "sm" ? 14 : size === "md" ? 16 : 18} />
         ) : (
           leftIcon
         )}
-        {children}
+        <span style={{ position: "relative", zIndex: 2 }}>{children}</span>
         {!isLoading && rightIcon}
       </button>
     );
   }
 );
+
+
 
 Button.displayName = "Button";
 

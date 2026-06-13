@@ -22,9 +22,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <label
           htmlFor={inputId}
           style={{
-            fontSize: "0.875rem",
+            fontSize: "0.75rem",
             fontWeight: 500,
-            color: "var(--color-text-primary)",
+            fontFamily: "var(--font-label)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--color-on-surface-variant)",
             ...(hideLabel
               ? {
                   position: "absolute",
@@ -53,32 +56,36 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           aria-describedby={describedBy || undefined}
           aria-invalid={!!error}
           style={{
-            height: "40px",
-            padding: "0 12px",
-            backgroundColor: "rgb(4, 14, 24)",
-            border: `1px solid ${error ? "var(--color-error-border)" : "rgba(245, 245, 235, 0.22)"}`,
+            height: "42px",
+            padding: "0 14px",
+            /* surface-container-lowest for deep dark fields */
+            backgroundColor: "#0e0e0e",
+            border: `1px solid ${error ? "var(--color-error-border)" : "rgba(255, 255, 255, 0.08)"}`,
             borderRadius: "var(--radius-md)",
-            color: "#f5f5eb",
+            color: "#e5e2e1",
             fontSize: "0.9375rem",
             fontFamily: "var(--font-sans)",
             outline: "none",
-            transition: "border-color var(--transition-fast), box-shadow var(--transition-fast)",
+            transition:
+              "border-color var(--transition-fast), box-shadow var(--transition-fast)",
             width: "100%",
             ...style,
           }}
           onFocus={(e) => {
             e.currentTarget.style.borderColor = error
               ? "var(--color-error)"
-              : "var(--color-border-focus)";
-            e.currentTarget.style.boxShadow = `0 0 0 3px ${
-              error ? "hsl(4 70% 48% / 0.12)" : "hsl(231 48% 48% / 0.12)"
+              : "#aec6ff";
+            e.currentTarget.style.boxShadow = `0 0 10px ${
+              error
+                ? "rgba(255, 180, 171, 0.15)"
+                : "rgba(174, 198, 255, 0.20)"
             }`;
             props.onFocus?.(e);
           }}
           onBlur={(e) => {
             e.currentTarget.style.borderColor = error
               ? "var(--color-error-border)"
-              : "rgba(245, 245, 235, 0.22)";
+              : "rgba(255, 255, 255, 0.08)";
             e.currentTarget.style.boxShadow = "none";
             props.onBlur?.(e);
           }}
@@ -90,7 +97,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={hintId}
             style={{
               fontSize: "0.8125rem",
-              color: "var(--color-text-muted)",
+              color: "var(--color-outline)",
             }}
           >
             {hint}
@@ -140,7 +147,8 @@ interface TextareaProps
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, hint, id, style, ...props }, ref) => {
-    const inputId = id ?? `textarea-${label.toLowerCase().replace(/\s+/g, "-")}`;
+    const inputId =
+      id ?? `textarea-${label.toLowerCase().replace(/\s+/g, "-")}`;
     const errorId = `${inputId}-error`;
     const hintId = `${inputId}-hint`;
 
@@ -153,9 +161,12 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         <label
           htmlFor={inputId}
           style={{
-            fontSize: "0.875rem",
+            fontSize: "0.75rem",
             fontWeight: 500,
-            color: "var(--color-text-primary)",
+            fontFamily: "var(--font-label)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--color-on-surface-variant)",
           }}
         >
           {label}
@@ -176,16 +187,17 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           aria-invalid={!!error}
           rows={4}
           style={{
-            padding: "10px 12px",
-            backgroundColor: "rgb(4, 14, 24)",
-            border: `1px solid ${error ? "var(--color-error-border)" : "rgba(245, 245, 235, 0.22)"}`,
+            padding: "12px 14px",
+            backgroundColor: "#0e0e0e",
+            border: `1px solid ${error ? "var(--color-error-border)" : "rgba(255, 255, 255, 0.08)"}`,
             borderRadius: "var(--radius-md)",
-            color: "#f5f5eb",
+            color: "#e5e2e1",
             fontSize: "0.9375rem",
             fontFamily: "var(--font-sans)",
             outline: "none",
             resize: "vertical",
-            transition: "border-color var(--transition-fast), box-shadow var(--transition-fast)",
+            transition:
+              "border-color var(--transition-fast), box-shadow var(--transition-fast)",
             width: "100%",
             lineHeight: 1.6,
             ...style,
@@ -193,16 +205,18 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           onFocus={(e) => {
             e.currentTarget.style.borderColor = error
               ? "var(--color-error)"
-              : "var(--color-border-focus)";
-            e.currentTarget.style.boxShadow = `0 0 0 3px ${
-              error ? "rgba(180, 50, 40, 0.14)" : "rgba(201, 123, 56, 0.18)"
+              : "#aec6ff";
+            e.currentTarget.style.boxShadow = `0 0 10px ${
+              error
+                ? "rgba(255, 180, 171, 0.15)"
+                : "rgba(174, 198, 255, 0.20)"
             }`;
             props.onFocus?.(e);
           }}
           onBlur={(e) => {
             e.currentTarget.style.borderColor = error
               ? "var(--color-error-border)"
-              : "rgba(245, 245, 235, 0.22)";
+              : "rgba(255, 255, 255, 0.08)";
             e.currentTarget.style.boxShadow = "none";
             props.onBlur?.(e);
           }}
@@ -210,7 +224,10 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         />
 
         {hint && !error && (
-          <p id={hintId} style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)" }}>
+          <p
+            id={hintId}
+            style={{ fontSize: "0.8125rem", color: "var(--color-outline)" }}
+          >
             {hint}
           </p>
         )}
@@ -218,9 +235,21 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           <p
             id={errorId}
             role="alert"
-            style={{ fontSize: "0.8125rem", color: "var(--color-error)", display: "flex", alignItems: "center", gap: "4px" }}
+            style={{
+              fontSize: "0.8125rem",
+              color: "var(--color-error)",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
           >
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              aria-hidden="true"
+            >
               <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 10.5a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5zm.75-3.25a.75.75 0 0 1-1.5 0v-3a.75.75 0 0 1 1.5 0v3z" />
             </svg>
             {error}

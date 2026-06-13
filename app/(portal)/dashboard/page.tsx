@@ -37,22 +37,23 @@ function PlusIcon() {
 
 function CalendarIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="1" y="3" width="14" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.25" />
-      <path d="M1 7h14M5 1v4M11 1v4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="1" y="3" width="14" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M1 7h14M5 1v4M11 1v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
 
 function ResponsesIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2 2h12v10H2z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" />
-      <path d="M5 6h6M5 8.5h4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
-      <path d="M5 14l1.5-2h3L11 14" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2 2h12v10H2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M5 6h6M5 8.5h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M5 14l1.5-2h3L11 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
+
 
 export default async function DashboardPage() {
   let events: unknown[] | null = null;
@@ -100,8 +101,8 @@ export default async function DashboardPage() {
         }}
       >
         <div>
-          <h1 style={{ fontSize: "1.625rem", marginBottom: "4px", color: "#f5f5eb" }}>Events</h1>
-          <p style={{ fontSize: "0.9rem", color: "rgba(245, 245, 235, 0.7)", margin: 0 }}>
+          <h1 style={{ fontSize: "1.625rem", marginBottom: "4px", color: "var(--color-on-surface)", letterSpacing: "-0.02em" }}>Events</h1>
+          <p style={{ fontSize: "0.9rem", color: "var(--color-outline)", margin: 0 }}>
             {eventList.length === 0
               ? "No events yet"
               : `${eventList.length} event${eventList.length !== 1 ? "s" : ""} total`}
@@ -162,7 +163,7 @@ export default async function DashboardPage() {
                         style={{
                           fontSize: "1.0625rem",
                           fontWeight: 600,
-                          color: "var(--color-text-primary)",
+                          color: "var(--color-on-surface)",
                           marginBottom: "6px",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -200,7 +201,7 @@ export default async function DashboardPage() {
                             alignItems: "center",
                             gap: "5px",
                             fontSize: "0.8125rem",
-                            color: "var(--color-text-muted)",
+                            color: "var(--color-outline)",
                           }}
                         >
                           <CalendarIcon />
@@ -214,8 +215,8 @@ export default async function DashboardPage() {
                             fontSize: "0.8125rem",
                             color:
                               responseCount > 0
-                                ? "var(--color-success)"
-                                : "var(--color-text-muted)",
+                                ? "#4edea3"
+                                : "var(--color-outline)",
                             fontWeight: responseCount > 0 ? 500 : 400,
                           }}
                         >
@@ -229,12 +230,12 @@ export default async function DashboardPage() {
                     {/* Chevron */}
                     <div
                       style={{
-                        color: "var(--color-text-muted)",
+                        color: "var(--color-outline)",
                         flexShrink: 0,
                         paddingTop: "2px",
                       }}
                     >
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                      <svg width="22" height="22" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                         <path d="M7 5l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
@@ -248,3 +249,4 @@ export default async function DashboardPage() {
     </div>
   );
 }
+

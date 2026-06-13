@@ -1,7 +1,8 @@
 import * as React from "react";
+
+// ─── Badge Input types ─────────────────────────────────────────
 import type { EventType } from "@/lib/types";
 
-// ─── Generic Badge ─────────────────────────────────────────────
 interface BadgeProps {
   children: React.ReactNode;
   variant?: "default" | "accent" | "success" | "warning" | "error";
@@ -11,24 +12,28 @@ interface BadgeProps {
 export function Badge({ children, variant = "default", style }: BadgeProps) {
   const styles: Record<string, React.CSSProperties> = {
     default: {
-      backgroundColor: "var(--color-bg-subtle)",
-      color: "var(--color-text-secondary)",
-      border: "1px solid var(--color-border)",
+      /* surface-container-high glass chip */
+      backgroundColor: "rgba(174, 198, 255, 0.06)",
+      color: "var(--color-on-surface-variant)",
+      border: "1px solid rgba(255, 255, 255, 0.10)",
     },
     accent: {
-      backgroundColor: "var(--color-accent-subtle)",
-      color: "var(--color-accent)",
-      border: "1px solid var(--color-accent-border)",
+      /* primary blue chip */
+      backgroundColor: "rgba(0, 112, 243, 0.15)",
+      color: "#aec6ff",
+      border: "1px solid rgba(174, 198, 255, 0.30)",
     },
     success: {
-      backgroundColor: "var(--color-success-subtle)",
-      color: "var(--color-success)",
-      border: "1px solid var(--color-success-border)",
+      /* emerald secondary chip */
+      backgroundColor: "rgba(78, 222, 163, 0.12)",
+      color: "#4edea3",
+      border: "1px solid rgba(78, 222, 163, 0.30)",
     },
     warning: {
-      backgroundColor: "var(--color-warning-subtle)",
-      color: "var(--color-warning)",
-      border: "1px solid var(--color-warning-border)",
+      /* tertiary warm orange chip */
+      backgroundColor: "rgba(255, 181, 150, 0.12)",
+      color: "#ffb596",
+      border: "1px solid rgba(255, 181, 150, 0.30)",
     },
     error: {
       backgroundColor: "var(--color-error-subtle)",
@@ -43,11 +48,13 @@ export function Badge({ children, variant = "default", style }: BadgeProps) {
         display: "inline-flex",
         alignItems: "center",
         height: "22px",
-        padding: "0 8px",
+        padding: "0 10px",
         borderRadius: "var(--radius-full)",
         fontSize: "0.75rem",
         fontWeight: 500,
-        letterSpacing: "0.01em",
+        fontFamily: "var(--font-label)",
+        letterSpacing: "0.05em",
+        textTransform: "uppercase",
         whiteSpace: "nowrap",
         ...styles[variant],
         ...style,
@@ -60,11 +67,11 @@ export function Badge({ children, variant = "default", style }: BadgeProps) {
 
 // ─── Event Type Badge ───────────────────────────────────────────
 const EVENT_TYPE_VARIANTS: Record<EventType, BadgeProps["variant"]> = {
-  Workshop: "accent",
-  Bootcamp: "success",
-  Hackathon: "warning",
+  Workshop:         "accent",
+  Bootcamp:         "success",
+  Hackathon:        "warning",
   "Technical Talk": "default",
-  Other: "default",
+  Other:            "default",
 };
 
 interface EventTypeBadgeProps {

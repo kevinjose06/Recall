@@ -26,12 +26,12 @@ export function EmptyState({ title, description, action, icon }: EmptyStateProps
             width: "56px",
             height: "56px",
             borderRadius: "var(--radius-xl)",
-            backgroundColor: "var(--color-bg-subtle)",
-            border: "1px solid var(--color-border)",
+            backgroundColor: "rgba(174, 198, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "var(--color-text-muted)",
+            color: "var(--color-outline)",
           }}
         >
           {icon}
@@ -42,12 +42,12 @@ export function EmptyState({ title, description, action, icon }: EmptyStateProps
             width: "56px",
             height: "56px",
             borderRadius: "var(--radius-xl)",
-            backgroundColor: "var(--color-bg-subtle)",
-            border: "1px solid var(--color-border)",
+            backgroundColor: "rgba(174, 198, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "var(--color-text-muted)",
+            color: "var(--color-outline)",
           }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -63,7 +63,7 @@ export function EmptyState({ title, description, action, icon }: EmptyStateProps
           style={{
             fontSize: "1rem",
             fontWeight: 600,
-            color: "var(--color-text-primary)",
+            color: "var(--color-on-surface)",
             margin: 0,
             lineHeight: 1.3,
           }}
@@ -74,7 +74,7 @@ export function EmptyState({ title, description, action, icon }: EmptyStateProps
           <p
             style={{
               fontSize: "0.9rem",
-              color: "var(--color-text-muted)",
+              color: "var(--color-outline)",
               margin: 0,
               lineHeight: 1.5,
             }}

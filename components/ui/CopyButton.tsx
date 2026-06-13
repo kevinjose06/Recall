@@ -24,15 +24,15 @@ export function CopyButton({ text, label = "Copy link" }: CopyButtonProps) {
   const config = {
     idle: {
       label,
-      bg: "var(--color-bg-subtle)",
-      color: "var(--color-text-secondary)",
-      border: "var(--color-border)",
+      bg: "rgba(174, 198, 255, 0.06)",
+      color: "var(--color-on-surface-variant)",
+      border: "rgba(255, 255, 255, 0.10)",
     },
     copied: {
       label: "Copied!",
-      bg: "var(--color-success-subtle)",
-      color: "var(--color-success)",
-      border: "var(--color-success-border)",
+      bg: "rgba(78, 222, 163, 0.12)",
+      color: "#4edea3",
+      border: "rgba(78, 222, 163, 0.30)",
     },
     error: {
       label: "Failed",

@@ -47,44 +47,24 @@ export default async function BuilderPage({ params }: PageProps) {
   const isLocked = (responseCount ?? 0) > 0;
 
   return (
-    <div className="page-container">
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" style={{ marginBottom: "24px" }}>
-        <ol
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            listStyle: "none",
-            fontSize: "0.875rem",
-          }}
-        >
-          <li>
-            <Link href="/dashboard" style={{ color: "var(--color-text-muted)", textDecoration: "none" }}>
-              Events
-            </Link>
-          </li>
-          <li aria-hidden="true" style={{ color: "var(--color-text-muted)" }}>/</li>
-          <li>
-            <Link
-              href={`/events/${eventId}`}
-              style={{ color: "var(--color-text-muted)", textDecoration: "none" }}
-            >
-              {event.title}
-            </Link>
-          </li>
-          <li aria-hidden="true" style={{ color: "var(--color-text-muted)" }}>/</li>
-          <li style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>
-            Builder
-          </li>
-        </ol>
-      </nav>
-
-      <div style={{ marginBottom: "24px" }}>
-        <h1 style={{ fontSize: "1.5rem", marginBottom: "6px" }}>
+    <div className="max-w-4xl mx-auto px-5 py-8 md:py-12 animate-fade-slide-up pb-32">
+      {/* Header Section with Breadcrumb */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 text-[var(--color-text-secondary)] font-label-caps text-label-caps mb-4">
+          <Link href="/dashboard" className="hover:text-[var(--color-primary)] transition-colors">
+            Events
+          </Link>
+          <span className="material-symbols-outlined text-[16px] select-none">chevron_right</span>
+          <Link href={`/events/${eventId}`} className="hover:text-[var(--color-primary)] transition-colors">
+            {event.title}
+          </Link>
+          <span className="material-symbols-outlined text-[16px] select-none">chevron_right</span>
+          <span className="text-[var(--color-text-primary)]">Builder</span>
+        </div>
+        <h1 className="font-display-lg text-display-lg font-bold text-[var(--color-text-primary)] leading-tight tracking-tight mb-2">
           Questionnaire builder
         </h1>
-        <p style={{ color: "var(--color-text-muted)", margin: 0, fontSize: "0.9rem" }}>
+        <p className="font-body-lg text-[var(--color-text-secondary)]">
           {isLocked
             ? "This questionnaire is locked because responses have been submitted."
             : "Add questions, set options, and reorder by dragging. Save when ready."}
@@ -99,3 +79,4 @@ export default async function BuilderPage({ params }: PageProps) {
     </div>
   );
 }
+

@@ -68,7 +68,7 @@ export function NavBar() {
       <div
         style={{
           padding: "20px 20px 16px",
-          borderBottom: "1px solid var(--color-border)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
         }}
       >
         <Link
@@ -90,9 +90,10 @@ export function NavBar() {
           <span
             style={{
               fontSize: "1rem",
-              fontWeight: 600,
-              color: "var(--color-text-primary)",
-              letterSpacing: "-0.01em",
+              fontWeight: 700,
+              color: "#e5e2e1",
+              letterSpacing: "-0.02em",
+              fontFamily: "var(--font-sans)",
             }}
           >
             Recall
@@ -100,8 +101,12 @@ export function NavBar() {
         </Link>
         <p
           style={{
-            fontSize: "0.75rem",
-            color: "var(--color-text-muted)",
+            fontSize: "0.6875rem",
+            fontFamily: "var(--font-label)",
+            fontWeight: 500,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#8b90a0",
             marginTop: "4px",
             paddingLeft: "38px",
           }}
@@ -131,15 +136,30 @@ export function NavBar() {
                     alignItems: "center",
                     gap: "10px",
                     padding: "8px 10px",
-                    borderRadius: "var(--radius-md)",
+                    borderRadius: "var(--radius-full)",
                     fontSize: "0.9375rem",
                     fontWeight: isActive ? 600 : 500,
-                    color: isActive ? "#c97b38" : "var(--color-text-secondary)",
+                    /* primary token for active, on-surface-variant for inactive */
+                    color: isActive ? "#aec6ff" : "#c1c6d7",
                     backgroundColor: isActive
-                      ? "rgba(201, 123, 56, 0.10)"
+                      ? "rgba(174, 198, 255, 0.10)"
                       : "transparent",
                     textDecoration: "none",
-                    transition: "background-color var(--transition-fast), color var(--transition-fast)",
+                    transition:
+                      "background-color var(--transition-fast), color var(--transition-fast)",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor =
+                        "rgba(255, 255, 255, 0.05)";
+                      e.currentTarget.style.color = "#e5e2e1";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.color = "#c1c6d7";
+                    }
                   }}
                 >
                   {item.icon}
@@ -155,7 +175,7 @@ export function NavBar() {
       <div
         style={{
           padding: "12px",
-          borderTop: "1px solid var(--color-border)",
+          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
         }}
       >
         <button
@@ -168,28 +188,27 @@ export function NavBar() {
             gap: "10px",
             width: "100%",
             padding: "8px 10px",
-            borderRadius: "var(--radius-md)",
+            borderRadius: "var(--radius-full)",
             border: "none",
             backgroundColor: "transparent",
-            color: signingOut ? "var(--color-text-muted)" : "var(--color-text-secondary)",
+            color: signingOut ? "#8b90a0" : "#c1c6d7",
             fontSize: "0.9375rem",
             fontFamily: "var(--font-sans)",
             fontWeight: 400,
             cursor: signingOut ? "not-allowed" : "pointer",
-            transition: "background-color var(--transition-fast), color var(--transition-fast)",
+            transition:
+              "background-color var(--transition-fast), color var(--transition-fast)",
             textAlign: "left",
           }}
           onMouseEnter={(e) => {
             if (!signingOut) {
-              e.currentTarget.style.backgroundColor = "var(--color-error-subtle)";
-              e.currentTarget.style.color = "var(--color-error)";
+              e.currentTarget.style.backgroundColor = "rgba(255, 180, 171, 0.10)";
+              e.currentTarget.style.color = "#ffb4ab";
             }
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = "transparent";
-            e.currentTarget.style.color = signingOut
-              ? "var(--color-text-muted)"
-              : "var(--color-text-secondary)";
+            e.currentTarget.style.color = signingOut ? "#8b90a0" : "#c1c6d7";
           }}
         >
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
