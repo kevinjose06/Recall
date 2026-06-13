@@ -14,7 +14,7 @@ export async function createEvent(eventData: Omit<Event, "id" | "created_at">) {
   return newEventRef.id;
 }
 
-export async function saveQuestions(eventId: string, questions: Omit<Question, "saved_id">[]) {
+export async function saveQuestions(eventId: string, questions: Omit<Question, "id">[]) {
   const batch = writeBatch(db);
   const questionsRef = collection(db, "events", eventId, "questions");
 
