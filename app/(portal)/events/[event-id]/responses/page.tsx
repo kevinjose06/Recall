@@ -335,7 +335,7 @@ export default async function ResponsesPage({ params }: PageProps) {
         )}
       </div>
 
-      <style jsx global>{`
+      <style>{`
         /* Custom scrollbar for text responses */
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
