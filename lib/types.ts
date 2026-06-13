@@ -55,3 +55,20 @@ export interface SubmitResponsePayload {
     answer_value: string | string[];
   }[];
 }
+
+// ─── Analytics ───
+
+export interface SingleChoiceAnalytics {
+  name: string;
+  value: number;
+}
+
+export interface MCQAnalytics {
+  option: string;
+  count: number;
+}
+
+export interface ShortTextAnalytics {
+  text: string;
+  submitted_at: string;
+}
