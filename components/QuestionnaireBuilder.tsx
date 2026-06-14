@@ -241,6 +241,41 @@ function QuestionCard({
           background: rgba(255, 255, 255, 0.08);
           border-color: rgba(255, 255, 255, 0.1);
         }
+        
+        /* Premium Card Content Spacing */
+        .premium-card-content {
+          padding: 20px 24px 48px 24px;
+        }
+        
+        /* Mobile and Desktop responsive overrides */
+        @media (max-width: 767px) {
+          .premium-card-content {
+            padding: 16px 16px 36px 16px !important;
+          }
+          .mobile-input-offset {
+            margin-left: 16px !important;
+            width: calc(100% - 32px) !important;
+          }
+          .mobile-short-text-offset {
+            margin-left: 16px !important;
+          }
+          .mobile-right-controls-offset {
+            margin-right: 0px !important;
+          }
+        }
+        
+        @media (min-width: 768px) {
+          .desktop-input-offset {
+            margin-left: 64px !important;
+            width: calc(100% - 128px) !important;
+          }
+          .desktop-short-text-offset {
+            margin-left: 64px !important;
+          }
+          .desktop-right-controls-offset {
+            margin-right: 64px !important;
+          }
+        }
       `}</style>
       {/* Drag handle block at the top */}
       <div 
@@ -253,7 +288,7 @@ function QuestionCard({
         </span>
       </div>
 
-      <div className="flex flex-col gap-6" style={{ padding: '20px 24px 48px 24px' }}>
+      <div className="flex flex-col gap-6 premium-card-content">
         {/* Top Row: Question Input */}
         <div className="w-full">
           <input
@@ -262,21 +297,19 @@ function QuestionCard({
             onChange={(e) => onChange({ ...question, question_text: e.target.value })}
             disabled={disabled}
             placeholder="Question title"
-            className="bg-[#1a1a1a] border-b-2 border-white/10 hover:border-white/30 text-[var(--color-text-primary)] font-body-lg text-lg focus:outline-none focus:border-[var(--color-primary)] transition-all rounded-t-md placeholder:text-white/30"
+            className="bg-[#1a1a1a] border-b-2 border-white/10 hover:border-white/30 text-[var(--color-text-primary)] font-body-lg text-lg focus:outline-none focus:border-[var(--color-primary)] transition-all rounded-t-md placeholder:text-white/30 mobile-input-offset desktop-input-offset"
             style={{ 
               padding: '12px 16px', 
-              minHeight: '56px', 
-              marginLeft: '64px',
-              width: 'calc(100% - 128px)'
+              minHeight: '56px',
             }}
           />
         </div>
 
         {/* Second Row: Options and Right Controls */}
-        <div className="flex justify-between items-start w-full mt-2 relative">
+        <div className="flex flex-col md:flex-row md:justify-between items-stretch md:items-start w-full mt-2 relative gap-6 md:gap-0">
           
           {/* Options Area */}
-          <div className="pl-1 w-full max-w-[60%]">
+          <div className="pl-1 w-full md:max-w-[60%]">
             {hasOptions && (
               <div className="flex flex-col gap-[14px]">
                 {question.options.map((opt, i) => (
@@ -309,7 +342,7 @@ function QuestionCard({
             )}
 
             {question.question_type === "short_text" && (
-              <div className="pt-2 pb-4 px-1" style={{ marginLeft: '64px' }}>
+              <div className="pt-2 pb-4 px-1 mobile-short-text-offset desktop-short-text-offset">
                 <input
                   type="text"
                   disabled
@@ -321,11 +354,11 @@ function QuestionCard({
           </div>
 
           {/* Right Controls Column */}
-          <div className="flex flex-col items-end gap-5 flex-shrink-0 ml-4 animate-fade-in" style={{ marginRight: '64px' }}>
+          <div className="flex flex-col items-stretch md:items-end gap-5 flex-shrink-0 w-full md:w-auto md:ml-4 animate-fade-in mobile-right-controls-offset desktop-right-controls-offset">
             {/* Question Type Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <div 
-                className={`flex items-center justify-between gap-4 rounded-lg cursor-pointer select-none premium-btn ${
+                className={`flex items-center justify-between gap-4 rounded-lg cursor-pointer select-none premium-btn w-full md:w-auto ${
                   disabled ? 'opacity-50 cursor-not-allowed border-white/5' : ''
                 }`}
                 style={{ padding: '10px 16px', minWidth: '220px' }}
@@ -578,30 +611,63 @@ export function QuestionnaireBuilder({
 
   return (
     <div>
+      <style>{`
+        /* Responsive controls bar overrides for mobile only */
+        @media (max-width: 767px) {
+          .responsive-navbar {
+            top: 12px !important;
+            width: 92% !important;
+            max-width: 400px !important;
+            height: 56px !important;
+            min-height: 56px !important;
+            padding: 0 20px !important;
+            gap: 16px !important;
+            justify-content: space-between !important;
+          }
+          .responsive-navbar-options {
+            gap: 16px !important;
+          }
+          .responsive-navbar-count {
+            font-size: 0.9rem !important;
+          }
+          .responsive-navbar-divider {
+            padding-right: 12px !important;
+            margin-right: 4px !important;
+          }
+          .responsive-button-text {
+            display: none !important;
+          }
+          .responsive-button-padding {
+            padding: 0 12px !important;
+            height: 38px !important;
+          }
+        }
+      `}</style>
+
       {/* Fixed Navbar Controls */}
       <div 
-        className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center justify-center gap-8 bg-[#141414]/95 border border-white/10 rounded-full backdrop-blur-md shadow-2xl w-max"
+        className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center justify-center gap-8 bg-[#141414]/95 border border-white/10 rounded-full backdrop-blur-md shadow-2xl w-max responsive-navbar"
         style={{ minHeight: '72px', padding: '0 48px' }}
       >
         <div className="flex items-center gap-4">
-          <span className="text-[1.05rem] font-semibold text-white tracking-wide">
-            {questions.length} Question{questions.length !== 1 ? "s" : ""}
+          <span className="text-[1.05rem] font-semibold text-white tracking-wide responsive-navbar-count">
+            {questions.length} <span className="responsive-button-text">Question{questions.length !== 1 ? "s" : ""}</span><span className="md:hidden">Q{questions.length !== 1 ? "s" : ""}</span>
           </span>
           {saveStatus === "saved" && (
             <span className="text-[var(--color-secondary)] text-[1.05rem] font-semibold flex items-center gap-1.5 animate-fade-in">
-              <span className="material-symbols-outlined text-[18px]">check_circle</span> Saved
+              <span className="material-symbols-outlined text-[18px]">check_circle</span> <span className="responsive-button-text">Saved</span>
             </span>
           )}
           {saveStatus === "error" && (
             <span className="text-[var(--color-error)] text-[1.05rem] font-semibold flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[18px]">error</span> Error
+              <span className="material-symbols-outlined text-[18px]">error</span> <span className="responsive-button-text">Error</span>
             </span>
           )}
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 responsive-navbar-options">
           {/* Undo / Redo controls */}
-          <div className="flex items-center gap-1 pr-4 border-r border-white/10">
+          <div className="flex items-center gap-1 pr-4 border-r border-white/10 responsive-navbar-divider">
             <button
               type="button"
               onClick={undo}
@@ -627,8 +693,9 @@ export function QuestionnaireBuilder({
               variant="primary"
               size="md"
               leftIcon={<span className="material-symbols-outlined text-[20px]">visibility</span>}
+              className="responsive-button-padding"
             >
-              Preview
+              <span className="responsive-button-text">Preview</span>
             </Button>
           </Link>
 
@@ -639,8 +706,9 @@ export function QuestionnaireBuilder({
             variant="secondary-light"
             size="md"
             leftIcon={<span className="material-symbols-outlined text-[20px]">save</span>}
+            className="responsive-button-padding"
           >
-            Save
+            <span className="responsive-button-text">Save</span>
           </Button>
         </div>
       </div>
