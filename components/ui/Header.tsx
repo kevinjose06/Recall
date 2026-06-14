@@ -22,7 +22,9 @@ export function Header() {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "24px 20px 0",
+        padding: "14px 20px",
+        height: "72px",
+        minHeight: "72px",
         backgroundColor: "transparent",
       }}
     >

@@ -21,6 +21,12 @@ const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   short_text: "Short text",
 };
 
+const QUESTION_TYPE_ICONS: Record<QuestionType, string> = {
+  single_choice: "radio_button_checked",
+  mcq: "check_box",
+  short_text: "short_text",
+};
+
 interface BuilderProps {
   eventId: string;
   eventTitle: string;
@@ -51,6 +57,7 @@ function OptionRow({
   onRemove,
   canRemove,
   disabled,
+  isMultipleChoice,
 }: {
   index: number;
   value: string;
@@ -58,16 +65,19 @@ function OptionRow({
   onRemove: () => void;
   canRemove: boolean;
   disabled: boolean;
+  isMultipleChoice: boolean;
 }) {
   return (
     <div className="flex items-center gap-3 w-full group">
       <span className="material-symbols-outlined text-white/20 text-[18px] opacity-0 group-hover:opacity-100 transition-opacity select-none">
         drag_indicator
       </span>
-      <input
-        type="radio"
-        disabled
-        className="w-4 h-4 rounded-full border border-white/20 bg-transparent text-[var(--color-primary)] focus:ring-0 shrink-0"
+      <div
+        className={`w-4 h-4 border bg-transparent shrink-0 transition-all duration-150 ${
+          isMultipleChoice 
+            ? "rounded-[4px] border-white/30" 
+            : "rounded-full border-white/30"
+        }`}
       />
       <input
         type="text"
@@ -75,7 +85,7 @@ function OptionRow({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         placeholder={`Option ${index + 1}`}
-        className="flex-grow bg-transparent border-b border-transparent hover:border-white/10 text-[var(--color-text-primary)] font-body-sm text-sm focus:outline-none focus:border-[var(--color-primary)] transition-all py-2 px-1 placeholder:text-white/30"
+        className="flex-grow max-w-[75%] bg-transparent border-b border-transparent hover:border-white/10 text-[var(--color-text-primary)] font-body-sm text-sm focus:outline-none focus:border-[var(--color-primary)] transition-all py-[10px] px-[14px] min-h-[40px] placeholder:text-white/30"
       />
       <button
         type="button"
@@ -117,6 +127,8 @@ function QuestionCard({
   const hasOptions =
     question.question_type === "single_choice" ||
     question.question_type === "mcq";
+
+  const isMultipleChoice = question.question_type === "mcq";
 
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
@@ -169,6 +181,67 @@ function QuestionCard({
         isDragging ? "border-[var(--color-primary)]/50 shadow-2xl scale-[1.01] z-50" : "shadow-md hover:border-white/20"
       }`}
     >
+      <style>{`
+        @keyframes dropdownReveal {
+          from {
+            opacity: 0;
+            transform: translateY(-8px) scale(0.96);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        .premium-dropdown {
+          animation: dropdownReveal 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          background: rgba(18, 18, 20, 0.95);
+          backdrop-filter: blur(24px) saturate(160%);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 
+            0 12px 40px -8px rgba(0, 0, 0, 0.7),
+            0 0 20px 2px rgba(123, 164, 255, 0.04);
+        }
+        .premium-item {
+          transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .premium-item:hover {
+          background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+          transform: translateX(3px);
+        }
+        .premium-item-active {
+          background: linear-gradient(90deg, rgba(123, 164, 255, 0.12) 0%, rgba(123, 164, 255, 0.02) 100%) !important;
+          border-left: 2px solid var(--color-primary);
+          border-top-left-radius: 0 !important;
+          border-bottom-left-radius: 0 !important;
+        }
+        .premium-btn {
+          background: rgba(26, 26, 26, 0.6);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .premium-btn:hover {
+          background: rgba(36, 36, 40, 0.9) !important;
+          border-color: rgba(123, 164, 255, 0.35) !important;
+          box-shadow: 0 0 15px 0 rgba(123, 164, 255, 0.08) !important;
+        }
+        .premium-icon-box {
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.04);
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+        }
+        .premium-item:hover .premium-icon-box {
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(255, 255, 255, 0.1);
+        }
+      `}</style>
       {/* Drag handle block at the top */}
       <div 
         {...(dragHandleProps ?? {})}
@@ -180,126 +253,167 @@ function QuestionCard({
         </span>
       </div>
 
-      <div className="px-8 pb-8 pt-2 flex flex-col gap-6">
-        {/* Top Row: Question Input and Type Dropdown */}
-        <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center w-full">
-          {/* Question text input */}
+      <div className="flex flex-col gap-6" style={{ padding: '20px 24px 48px 24px' }}>
+        {/* Top Row: Question Input */}
+        <div className="w-full">
           <input
             type="text"
             value={question.question_text}
             onChange={(e) => onChange({ ...question, question_text: e.target.value })}
             disabled={disabled}
             placeholder="Question title"
-            className="flex-grow bg-[#1a1a1a] border-b-2 border-white/10 hover:border-white/30 text-[var(--color-text-primary)] font-body-lg text-lg focus:outline-none focus:border-[var(--color-primary)] transition-all py-3 px-4 rounded-t-md placeholder:text-white/30 w-full sm:w-auto"
+            className="bg-[#1a1a1a] border-b-2 border-white/10 hover:border-white/30 text-[var(--color-text-primary)] font-body-lg text-lg focus:outline-none focus:border-[var(--color-primary)] transition-all rounded-t-md placeholder:text-white/30"
+            style={{ 
+              padding: '12px 16px', 
+              minHeight: '56px', 
+              marginLeft: '64px',
+              width: 'calc(100% - 128px)'
+            }}
           />
+        </div>
 
-          {/* Question Type Dropdown */}
-          <div className="relative flex-shrink-0" ref={dropdownRef}>
-            <div 
-              className={`flex items-center gap-2 px-4 py-3 bg-[#1a1a1a] border rounded-md cursor-pointer transition-all ${
-                disabled ? 'opacity-50 cursor-not-allowed border-white/5' : 'border-white/10 hover:border-white/30'
-              }`}
-              onClick={() => !disabled && setIsDropdownOpen(!isDropdownOpen)}
-            >
-              <span className="font-body-sm text-sm whitespace-nowrap">{QUESTION_TYPE_LABELS[question.question_type]}</span>
-              <span className={`material-symbols-outlined text-[var(--color-text-secondary)] text-[18px] transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}>
-                expand_more
-              </span>
-            </div>
-            
-            {isDropdownOpen && !disabled && (
-              <div className="absolute top-[calc(100%+4px)] right-0 w-48 z-50 bg-[#1a1a1a] border border-white/10 rounded-md shadow-xl py-1">
-                {(Object.keys(QUESTION_TYPE_LABELS) as QuestionType[]).map((type) => (
-                  <div
-                    key={type}
-                    className={`px-4 py-2 cursor-pointer font-body-sm text-sm transition-colors flex items-center justify-between ${
-                      question.question_type === type ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-[var(--color-text-primary)] hover:bg-white/5'
-                    }`}
-                    onClick={() => {
-                      changeQuestionType(type);
-                      setIsDropdownOpen(false);
-                    }}
-                  >
-                    {QUESTION_TYPE_LABELS[type]}
-                    {question.question_type === type && <span className="material-symbols-outlined text-[16px]">check</span>}
-                  </div>
+        {/* Second Row: Options and Right Controls */}
+        <div className="flex justify-between items-start w-full mt-2 relative">
+          
+          {/* Options Area */}
+          <div className="pl-1 w-full max-w-[60%]">
+            {hasOptions && (
+              <div className="flex flex-col gap-[14px]">
+                {question.options.map((opt, i) => (
+                  <OptionRow
+                    key={i}
+                    index={i}
+                    value={opt}
+                    onChange={(v) => updateOption(i, v)}
+                    onRemove={() => removeOption(i)}
+                    canRemove={question.options.length > 2}
+                    disabled={disabled}
+                    isMultipleChoice={isMultipleChoice}
+                  />
                 ))}
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-transparent select-none text-[18px]">drag_indicator</span>
+                  <div className={`w-4 h-4 border border-white/20 bg-transparent shrink-0 ${
+                    isMultipleChoice ? "rounded-[4px]" : "rounded-full"
+                  }`} />
+                  <button
+                    type="button"
+                    onClick={addOption}
+                    disabled={disabled}
+                    className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors py-2 px-1"
+                  >
+                    Add option
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {question.question_type === "short_text" && (
+              <div className="pt-2 pb-4 px-1" style={{ marginLeft: '64px' }}>
+                <input
+                  type="text"
+                  disabled
+                  placeholder="Short answer text"
+                  className="w-full bg-transparent border-b border-white/20 pb-2 font-body-sm text-sm text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed outline-none"
+                />
               </div>
             )}
           </div>
-        </div>
 
-        {/* Options Area */}
-        <div className="pl-1 mt-2">
-          {hasOptions && (
-            <div className="flex flex-col gap-3">
-              {question.options.map((opt, i) => (
-                <OptionRow
-                  key={i}
-                  index={i}
-                  value={opt}
-                  onChange={(v) => updateOption(i, v)}
-                  onRemove={() => removeOption(i)}
-                  canRemove={question.options.length > 2}
-                  disabled={disabled}
-                />
-              ))}
-              <div className="flex items-center gap-3 mt-1">
-                <span className="material-symbols-outlined text-transparent select-none text-[18px]">drag_indicator</span>
-                <input type="radio" disabled className="w-4 h-4 rounded-full border border-white/20 bg-transparent focus:ring-0 shrink-0" />
-                <button
-                  type="button"
-                  onClick={addOption}
-                  disabled={disabled}
-                  className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors py-2 px-1"
-                >
-                  Add option
-                </button>
+          {/* Right Controls Column */}
+          <div className="flex flex-col items-end gap-5 flex-shrink-0 ml-4 animate-fade-in" style={{ marginRight: '64px' }}>
+            {/* Question Type Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <div 
+                className={`flex items-center justify-between gap-4 rounded-lg cursor-pointer select-none premium-btn ${
+                  disabled ? 'opacity-50 cursor-not-allowed border-white/5' : ''
+                }`}
+                style={{ padding: '10px 16px', minWidth: '220px' }}
+                onClick={() => !disabled && setIsDropdownOpen(!isDropdownOpen)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="premium-icon-box" style={{ background: 'rgba(123, 164, 255, 0.1)', borderColor: 'rgba(123, 164, 255, 0.2)' }}>
+                    <span className="material-symbols-outlined text-[var(--color-primary)] text-[20px]">
+                      {QUESTION_TYPE_ICONS[question.question_type]}
+                    </span>
+                  </div>
+                  <span className="font-body-sm text-base font-medium whitespace-nowrap text-white">{QUESTION_TYPE_LABELS[question.question_type]}</span>
+                </div>
+                <span className={`material-symbols-outlined text-[var(--color-text-secondary)] text-[22px] transition-transform duration-250 ${isDropdownOpen ? 'rotate-180 text-white' : ''}`}>
+                  expand_more
+                </span>
               </div>
+              
+              {isDropdownOpen && !disabled && (
+                <div className="absolute top-[calc(100%+6px)] right-0 w-full min-w-[220px] z-50 premium-dropdown p-1.5 flex flex-col gap-0.5 rounded-xl origin-top">
+                  {(Object.keys(QUESTION_TYPE_LABELS) as QuestionType[]).map((type) => {
+                    const isActive = question.question_type === type;
+                    return (
+                      <div
+                        key={type}
+                        className={`px-3 py-2.5 cursor-pointer font-body-sm text-sm rounded-lg flex items-center justify-between group/item premium-item ${
+                          isActive 
+                            ? 'premium-item-active text-[var(--color-primary)] font-semibold' 
+                            : 'text-[var(--color-text-secondary)] hover:text-white'
+                        }`}
+                        onClick={() => {
+                          changeQuestionType(type);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`premium-icon-box transition-all ${
+                            isActive 
+                              ? 'bg-[var(--color-primary)]/15 border-[var(--color-primary)]/20 text-[var(--color-primary)]' 
+                              : 'text-white/40 group-hover/item:text-white/80'
+                          }`}>
+                            <span className="material-symbols-outlined text-[18px]">
+                              {QUESTION_TYPE_ICONS[type]}
+                            </span>
+                          </div>
+                          <span>{QUESTION_TYPE_LABELS[type]}</span>
+                        </div>
+                        {isActive && (
+                          <span className="material-symbols-outlined text-[var(--color-primary)] text-[18px] mr-1">check</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
 
-          {question.question_type === "short_text" && (
-            <div className="pt-2 pb-4 px-1">
-              <input
-                type="text"
-                disabled
-                placeholder="Short answer text"
-                className="w-1/2 bg-transparent border-b border-white/20 pb-2 font-body-sm text-sm text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed outline-none"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Footer actions: Duplicate, Delete, Required Toggle */}
-        <div className="flex items-center justify-end gap-6 pt-4 mt-2">
-          <button
-            type="button"
-            onClick={onRemove}
-            disabled={disabled}
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-error)] transition-colors disabled:opacity-40"
-            aria-label="Delete question"
-            title="Delete question"
-          >
-            <span className="material-symbols-outlined text-[22px]">delete</span>
-          </button>
-          
-          <div className="w-px h-6 bg-white/10"></div>
-          
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <span className="font-body-sm text-sm text-[var(--color-text-primary)] group-hover:text-white transition-colors">Required</span>
-            <div className="relative">
-              <input
-                type="checkbox"
+            {/* Footer actions: Duplicate, Delete, Required Toggle */}
+            <div className="flex items-center justify-end gap-6 relative" style={{ zIndex: 10 }}>
+              <button
+                type="button"
+                onClick={onRemove}
                 disabled={disabled}
-                checked={question.is_required}
-                onChange={(e) => onChange({ ...question, is_required: e.target.checked })}
-                className="sr-only"
-              />
-              <div className={`block w-10 h-6 rounded-full transition-colors ${question.is_required ? 'bg-[var(--color-primary)]' : 'bg-white/20'}`}></div>
-              <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${question.is_required ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-error)] transition-colors disabled:opacity-40"
+                aria-label="Delete question"
+                title="Delete question"
+              >
+                <span className="material-symbols-outlined text-[22px]">delete</span>
+              </button>
+              
+              <div className="w-px h-6 bg-white/10"></div>
+              
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <span className="font-body-sm text-sm text-[var(--color-text-primary)] group-hover:text-white transition-colors">Required</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    disabled={disabled}
+                    checked={question.is_required}
+                    onChange={(e) => onChange({ ...question, is_required: e.target.checked })}
+                    className="sr-only"
+                  />
+                  <div className={`block w-10 h-6 rounded-full transition-colors ${question.is_required ? 'bg-[var(--color-primary)]' : 'bg-white/20'}`}></div>
+                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${question.is_required ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                </div>
+              </label>
             </div>
-          </label>
+          </div>
         </div>
       </div>
     </div>
@@ -465,7 +579,10 @@ export function QuestionnaireBuilder({
   return (
     <div>
       {/* Fixed Navbar Controls */}
-      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center justify-center gap-8 bg-[#141414]/95 border border-white/10 px-8 py-5 rounded-full backdrop-blur-md shadow-2xl w-max">
+      <div 
+        className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center justify-center gap-8 bg-[#141414]/95 border border-white/10 rounded-full backdrop-blur-md shadow-2xl w-max"
+        style={{ minHeight: '72px', padding: '0 48px' }}
+      >
         <div className="flex items-center gap-4">
           <span className="text-[1.05rem] font-semibold text-white tracking-wide">
             {questions.length} Question{questions.length !== 1 ? "s" : ""}
