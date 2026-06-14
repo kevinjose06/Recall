@@ -29,11 +29,15 @@ function formatDateTime(iso: string) {
 export default async function ResponsesPage({ params }: PageProps) {
   const { "event-id": eventId } = await params;
 
-  const event = await getEventAdmin(eventId);
+  const [event, questions, responsesAndAnswers] = await Promise.all([
+    getEventAdmin(eventId),
+    getQuestionsAdmin(eventId),
+    getResponsesAndAnswersAdmin(eventId),
+  ]);
+
   if (!event) notFound();
 
-  const questions = await getQuestionsAdmin(eventId);
-  const { responses, answers } = await getResponsesAndAnswersAdmin(eventId);
+  const { responses, answers } = responsesAndAnswers;
 
   const responseCount = responses.length;
 

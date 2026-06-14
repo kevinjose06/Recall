@@ -40,11 +40,12 @@ function formatEventDates(startStr: string, endStr: string) {
 export default async function RespondPage({ params }: PageProps) {
   const { "event-id": eventId } = await params;
 
-  const event = await getEventAdmin(eventId);
+  const [event, questions] = await Promise.all([
+    getEventAdmin(eventId),
+    getQuestionsAdmin(eventId),
+  ]);
 
   if (!event) notFound();
-
-  const questions = await getQuestionsAdmin(eventId);
 
   const hasQuestions = questions && questions.length > 0;
 

@@ -49,9 +49,7 @@ export async function getResponsesAndAnswersAdmin(eventId: string) {
 
   const responses = responsesSnapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Response));
   
-  const answers: (Answer & { submitted_at: string })[] = [];
-
-  for (const response of responses) {
+  const answersPromises = responses.map(async (response) => {
     const answersSnapshot = await adminDb
       .collection("events")
       .doc(eventId)
@@ -60,16 +58,17 @@ export async function getResponsesAndAnswersAdmin(eventId: string) {
       .collection("answers")
       .get();
 
-    for (const doc of answersSnapshot.docs) {
-      answers.push({
-        id: doc.id,
-        question_id: doc.id,
-        response_id: response.id,
-        answer_value: doc.data().answer_value,
-        submitted_at: response.submitted_at,
-      });
-    }
-  }
+    return answersSnapshot.docs.map((doc: any) => ({
+      id: doc.id,
+      question_id: doc.id,
+      response_id: response.id,
+      answer_value: doc.data().answer_value,
+      submitted_at: response.submitted_at,
+    }));
+  });
+
+  const answersResults = await Promise.all(answersPromises);
+  const answers = answersResults.flat();
 
   return { responses, answers };
 }

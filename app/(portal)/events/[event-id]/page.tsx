@@ -44,20 +44,19 @@ function formatEventDates(startStr: string, endStr: string) {
 export default async function EventDetailPage({ params }: PageProps) {
   const { "event-id": eventId } = await params;
 
-  const event = await getEventAdmin(eventId);
+  const [event, responseCount, questionsCountSnap] = await Promise.all([
+    getEventAdmin(eventId),
+    getResponseCountAdmin(eventId),
+    adminDb
+      .collection("events")
+      .doc(eventId)
+      .collection("questions")
+      .count()
+      .get(),
+  ]);
 
   if (!event) notFound();
 
-  const responseCount = await getResponseCountAdmin(eventId);
-
-  // For questions count, we can do a simple count query on the subcollection
-  const questionsCountSnap = await adminDb
-    .collection("events")
-    .doc(eventId)
-    .collection("questions")
-    .count()
-    .get();
-  
   const questionCount = questionsCountSnap.data().count;
 
   return (

@@ -15,14 +15,13 @@ interface PageProps {
 export default async function BuilderPage({ params }: PageProps) {
   const { "event-id": eventId } = await params;
 
-  const event = await getEventAdmin(eventId);
+  const [event, questions, responseCount] = await Promise.all([
+    getEventAdmin(eventId),
+    getQuestionsAdmin(eventId),
+    getResponseCountAdmin(eventId),
+  ]);
 
   if (!event) notFound();
-
-  const questions = await getQuestionsAdmin(eventId);
-
-  // Check if any responses exist — if so, lock the builder
-  const responseCount = await getResponseCountAdmin(eventId);
 
   const isLocked = responseCount > 0;
 
