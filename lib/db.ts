@@ -14,30 +14,44 @@ export async function createEvent(eventData: Omit<Event, "id" | "created_at">) {
   return newEventRef.id;
 }
 
-export async function saveQuestions(eventId: string, questions: Omit<Question, "id">[]) {
+export async function saveQuestions(eventId: string, questions: Array<Omit<Question, "id"> & { id?: string }>) {
   const batch = writeBatch(db);
   const questionsRef = collection(db, "events", eventId, "questions");
 
-  // Since we want to replace all, we should theoretically delete existing, but writing a full batch is easier if we delete the subcollection first.
-  // The Admin SDK can delete subcollections, but Client SDK cannot easily delete collections.
-  // For safety, we fetch existing ones and delete them.
+  // Fetch existing questions
   const existingSnapshot = await getDocs(questionsRef);
+  
+  // Create a set of incoming IDs to identify which ones to keep
+  const incomingIds = new Set(questions.map(q => q.id).filter(id => id && !id.startsWith("local-")));
+
+  // Delete existing questions that are NOT in the incoming list
   existingSnapshot.forEach((doc) => {
-    batch.delete(doc.ref);
+    if (!incomingIds.has(doc.id)) {
+      batch.delete(doc.ref);
+    }
   });
 
-  // Now insert new
+  // Insert or update questions
   const savedIds: string[] = [];
   questions.forEach((q, i) => {
-    const newDocRef = doc(questionsRef);
-    batch.set(newDocRef, {
+    let docRef;
+    if (q.id && !q.id.startsWith("local-")) {
+      // Existing question, update it
+      docRef = doc(questionsRef, q.id);
+    } else {
+      // New question, create a new document
+      docRef = doc(questionsRef);
+    }
+    
+    batch.set(docRef, {
       event_id: eventId,
       question_text: q.question_text,
       question_type: q.question_type,
       options: q.question_type === "short_text" ? null : q.options,
       order_index: i,
+      is_required: q.is_required ?? false,
     });
-    savedIds.push(newDocRef.id);
+    savedIds.push(docRef.id);
   });
 
   await batch.commit();

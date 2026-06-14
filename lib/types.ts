@@ -29,6 +29,7 @@ export interface Question {
   question_type: QuestionType;
   options: string[] | null; // null for short_text
   order_index: number;
+  is_required?: boolean;
 }
 
 export interface Response {

@@ -1,9 +1,16 @@
 import { adminDb } from "./firebase-admin";
 import type { Event, Question, Response, Answer } from "./types";
 
-export async function getAllEventsAdmin(): Promise<Event[]> {
+export async function getAllEventsAdmin(): Promise<(Event & { response_count?: number })[]> {
   const snapshot = await adminDb.collection("events").orderBy("start_date", "desc").get();
-  return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Event));
+  const events = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Event));
+  
+  return Promise.all(
+    events.map(async (event) => {
+      const count = await getResponseCountAdmin(event.id);
+      return { ...event, response_count: count };
+    })
+  );
 }
 
 export async function getEventAdmin(eventId: string): Promise<Event | null> {

@@ -6,9 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { Event } from "@/lib/types";
 
-export const metadata: Metadata = {
-  title: "Dashboard",
-};
+
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-IN", {

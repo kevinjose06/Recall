@@ -1,12 +1,7 @@
 import { Header } from "@/components/ui/Header";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: {
-    template: "%s — CSA Recall",
-    default: "Member Portal — CSA Recall",
-  },
-};
+
 
 export default function PortalLayout({
   children,

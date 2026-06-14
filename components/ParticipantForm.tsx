@@ -70,20 +70,24 @@ export function ParticipantForm({
 
     questions.forEach((q) => {
       const answer = answers[q.id];
-      if (q.question_type === "single_choice") {
-        if (!answer || (answer as string).trim() === "") {
-          errors[q.id] = "Please select an option.";
-          valid = false;
-        }
-      } else if (q.question_type === "mcq") {
-        if (!answer || (answer as string[]).length === 0) {
-          errors[q.id] = "Please select at least one option.";
-          valid = false;
-        }
-      } else if (q.question_type === "short_text") {
-        if (!answer || (answer as string).trim() === "") {
-          errors[q.id] = "Please enter a response.";
-          valid = false;
+      const isRequired = q.is_required;
+
+      if (isRequired) {
+        if (q.question_type === "single_choice") {
+          if (!answer || (answer as string).trim() === "") {
+            errors[q.id] = "Please select an option.";
+            valid = false;
+          }
+        } else if (q.question_type === "mcq") {
+          if (!answer || (answer as string[]).length === 0) {
+            errors[q.id] = "Please select at least one option.";
+            valid = false;
+          }
+        } else if (q.question_type === "short_text") {
+          if (!answer || (answer as string).trim() === "") {
+            errors[q.id] = "Please enter a response.";
+            valid = false;
+          }
         }
       }
     });
@@ -205,6 +209,7 @@ export function ParticipantForm({
                       : "Short answer"}
                   </span>
                   {question.question_text}
+                  {question.is_required && <span className="text-[var(--color-error)] ml-1" title="Required">*</span>}
                 </legend>
 
                 <div className="clear-both flex flex-col gap-2.5">

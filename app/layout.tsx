@@ -21,10 +21,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: {
-    template: "%s — CSA Recall",
-    default: "CSA Recall",
-  },
+  title: "Recall",
   description:
     "Internal feedback platform for the Computer Science Association, RIT Kottayam. Collect and analyse event feedback with ease.",
   robots: {
