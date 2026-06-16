@@ -2,7 +2,7 @@ import { adminDb } from "./firebase-admin";
 import type { Event, Question, Response, Answer } from "./types";
 
 export async function getAllEventsAdmin(): Promise<(Event & { response_count?: number })[]> {
-  const snapshot = await adminDb.collection("events").orderBy("start_date", "desc").get();
+  const snapshot = await adminDb.collection("events").orderBy("created_at", "desc").get();
   const events = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Event));
   
   return Promise.all(

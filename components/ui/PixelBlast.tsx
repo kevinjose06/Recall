@@ -174,6 +174,7 @@ uniform float uRippleSpeed;
 uniform float uRippleThickness;
 uniform float uRippleIntensity;
 uniform float uEdgeFade;
+uniform float uColorIntensity;
 
 uniform int   uShapeType;
 const int SHAPE_SQUARE   = 0;
@@ -313,16 +314,17 @@ void main(){
     M *= fade;
   }
 
-  vec3 color = uColor;
+  vec3 color = uColor * uColorIntensity;
 
-  // sRGB gamma correction
-  vec3 srgbColor = mix(
+  // Convert from Linear to sRGB for screen output
+  vec3 a = vec3(0.055);
+  vec3 sRGB = mix(
+    (vec3(1.0) + a) * pow(color, vec3(1.0 / 2.4)) - a,
     color * 12.92,
-    1.055 * pow(color, vec3(1.0 / 2.4)) - 0.055,
-    step(0.0031308, color)
+    step(color, vec3(0.0031308))
   );
 
-  fragColor = vec4(srgbColor, M);
+  fragColor = vec4(sRGB, M);
 }
 `;
 
@@ -352,6 +354,7 @@ interface PixelBlastProps {
   transparent?: boolean;
   edgeFade?: number;
   noiseAmount?: number;
+  colorIntensity?: number;
 }
 
 /* ─── Component ─── */
@@ -378,6 +381,7 @@ const PixelBlast = ({
   transparent = true,
   edgeFade = 0.5,
   noiseAmount = 0,
+  colorIntensity = 1.0,
 }: PixelBlastProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const visibilityRef = useRef({ visible: true });
@@ -453,6 +457,7 @@ const PixelBlast = ({
         uRippleThickness: { value: rippleThickness },
         uRippleIntensity: { value: rippleIntensityScale },
         uEdgeFade: { value: edgeFade },
+        uColorIntensity: { value: colorIntensity },
       };
 
       const scene = new THREE.Scene();
@@ -629,6 +634,9 @@ const PixelBlast = ({
       t.uniforms.uRippleThickness.value = rippleThickness;
       t.uniforms.uRippleSpeed.value = rippleSpeed;
       t.uniforms.uEdgeFade.value = edgeFade;
+      if (t.uniforms.uColorIntensity) {
+        t.uniforms.uColorIntensity.value = colorIntensity;
+      }
       if (transparent) t.renderer.setClearAlpha(0);
       else t.renderer.setClearColor(0x000000, 1);
       if (t.liquidEffect) {
@@ -677,6 +685,7 @@ const PixelBlast = ({
     variant,
     color,
     speed,
+    colorIntensity,
   ]);
 
   return (
