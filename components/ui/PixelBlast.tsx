@@ -355,6 +355,7 @@ interface PixelBlastProps {
   edgeFade?: number;
   noiseAmount?: number;
   colorIntensity?: number;
+  backgroundColor?: string;
 }
 
 /* ─── Component ─── */
@@ -382,6 +383,7 @@ const PixelBlast = ({
   edgeFade = 0.5,
   noiseAmount = 0,
   colorIntensity = 1.0,
+  backgroundColor = "#000000",
 }: PixelBlastProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const visibilityRef = useRef({ visible: true });
@@ -434,7 +436,7 @@ const PixelBlast = ({
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       container.appendChild(renderer.domElement);
       if (transparent) renderer.setClearAlpha(0);
-      else renderer.setClearColor(0x000000, 1);
+      else renderer.setClearColor(new THREE.Color(backgroundColor), 1);
 
       const uniforms = {
         uResolution: { value: new THREE.Vector2(0, 0) },
@@ -638,7 +640,7 @@ const PixelBlast = ({
         t.uniforms.uColorIntensity.value = colorIntensity;
       }
       if (transparent) t.renderer.setClearAlpha(0);
-      else t.renderer.setClearColor(0x000000, 1);
+      else t.renderer.setClearColor(new THREE.Color(backgroundColor), 1);
       if (t.liquidEffect) {
         const uStrength = t.liquidEffect.uniforms?.get("uStrength");
         if (uStrength) uStrength.value = liquidStrength;
@@ -686,6 +688,7 @@ const PixelBlast = ({
     color,
     speed,
     colorIntensity,
+    backgroundColor,
   ]);
 
   return (

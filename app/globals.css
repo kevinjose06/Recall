@@ -407,3 +407,35 @@ select option {
   background-color: #1c1b1b !important;
   color: #e5e2e1 !important;
 }
+
+/* ─── Premium Skeleton Shimmer ─── */
+@keyframes shine-skeleton {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  background: rgba(255, 255, 255, 0.04);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.0) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shine-skeleton 2.5s infinite linear;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-glass-panel {
+  background: rgba(13, 13, 13, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-2xl);
+}
+

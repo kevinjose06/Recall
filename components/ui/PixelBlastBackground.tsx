@@ -20,7 +20,8 @@ export function PixelBlastBackground() {
       <PixelBlast
         variant="square"
         pixelSize={4}
-        color="#1c1675"
+        color="#2c277d"
+        backgroundColor="#120f3a"
         patternScale={3}
         patternDensity={2.0}
         enableRipples
