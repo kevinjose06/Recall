@@ -6,6 +6,7 @@ import { EventTypeBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { Event } from "@/lib/types";
+import { DeleteEventButton } from "./DeleteEventButton";
 
 
 
@@ -207,17 +208,27 @@ export default async function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Chevron */}
                     <div
                       style={{
-                        color: "var(--color-outline)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
                         flexShrink: 0,
-                        paddingTop: "2px",
                       }}
                     >
-                      <svg width="22" height="22" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                        <path d="M7 5l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      <DeleteEventButton eventId={event.id} />
+                      
+                      {/* Chevron */}
+                      <div
+                        style={{
+                          color: "var(--color-outline)",
+                          paddingTop: "2px",
+                        }}
+                      >
+                        <svg width="22" height="22" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                          <path d="M7 5l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </Card>

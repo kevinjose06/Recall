@@ -21,7 +21,6 @@ export function PixelBlastBackground() {
         variant="square"
         pixelSize={4}
         color="#2c277d"
-        backgroundColor="#120f3a"
         patternScale={3}
         patternDensity={2.0}
         enableRipples
@@ -31,7 +30,7 @@ export function PixelBlastBackground() {
         speed={0.5}
         transparent={false}
         edgeFade={0}
-        colorIntensity={2.5}
+        colorIntensity={2.4}
       />
     </div>
   );
