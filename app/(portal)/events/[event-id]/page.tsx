@@ -5,9 +5,10 @@ import { notFound } from "next/navigation";
 import { getEventAdmin, getResponseCountAdmin } from "@/lib/db-admin";
 import { adminDb } from "@/lib/firebase-admin";
 import { EventTypeBadge } from "@/components/ui/Badge";
-import { CopyButton } from "@/components/ui/CopyButton";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ParticipantLinkShare } from "@/components/ParticipantLinkShare";
+
 
 interface PageProps {
   params: Promise<{ "event-id": string }>;
@@ -168,43 +169,9 @@ export default async function EventDetailPage({ params }: PageProps) {
             Share this unique link with participants to collect their feedback. Anyone with this link can submit a response.
           </p>
         </div>
-        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "stretch" }}>
-          <div style={{ flex: 1, minWidth: "240px" }}>
-            <input
-              id="participant-link"
-              className="input-glow"
-              style={{
-                width: "100%",
-                backgroundColor: "var(--color-surface-container-lowest)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                color: "var(--color-on-surface)",
-                fontFamily: "var(--font-mono)",
-                fontSize: "0.875rem",
-                borderRadius: "var(--radius-md)",
-                padding: "12px 16px",
-                outline: "none",
-                transition: "border-color var(--transition-base)",
-              }}
-              readOnly
-              type="text"
-              value={`https://csa-feedback.vercel.app/respond/${eventId}`}
-            />
-          </div>
-          <ParticipantLinkCopy eventId={eventId} />
-        </div>
+        <ParticipantLinkShare eventId={eventId} />
       </Card>
     </div>
-  );
-}
-
-// Client component just for the copy button (needs window.location)
-function ParticipantLinkCopy({ eventId }: { eventId: string }) {
-  const path = `/respond/${eventId}`;
-  return (
-    <CopyButton
-      text={`${typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL ?? "https://csa-feedback.vercel.app")}${path}`}
-      label="Copy link"
-    />
   );
 }
 
