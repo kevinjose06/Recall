@@ -202,7 +202,7 @@ function ParticipantLinkCopy({ eventId }: { eventId: string }) {
   const path = `/respond/${eventId}`;
   return (
     <CopyButton
-      text={`${process.env.NEXT_PUBLIC_SITE_URL ?? (typeof window !== "undefined" ? window.location.origin : "https://csa-feedback.vercel.app")}${path}`}
+      text={`${typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL ?? "https://csa-feedback.vercel.app")}${path}`}
       label="Copy link"
     />
   );
