@@ -28,7 +28,7 @@ export function PixelBlastBackground() {
         rippleThickness={0.13}
         rippleIntensityScale={1}
         speed={0.5}
-        transparent={false}
+        transparent={true}
         edgeFade={0}
         colorIntensity={2.4}
       />

@@ -183,8 +183,30 @@ export function ParticipantForm({
 
   // ── Form ───────────────────────────────────────────────────
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
-      <div className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-10">
+      <style>{`
+        /* Mobile and Desktop responsive overrides */
+        @media (max-width: 767px) {
+          .premium-card-content {
+            padding: 16px 16px 36px 16px !important;
+          }
+          .mobile-input-offset {
+            margin-left: 16px !important;
+            width: calc(100% - 32px) !important;
+          }
+        }
+        
+        @media (min-width: 768px) {
+          .premium-card-content {
+            padding: 20px 24px 48px 24px;
+          }
+          .desktop-input-offset {
+            margin-left: 64px !important;
+            width: calc(100% - 128px) !important;
+          }
+        }
+      `}</style>
+      <div className="flex flex-col gap-10">
         {questions.map((question, idx) => {
           const hasError = !!validationErrors[question.id];
           const delayStyle = { animationDelay: `${(idx + 2) * 0.1}s` };
@@ -193,118 +215,145 @@ export function ParticipantForm({
             <div
               key={question.id}
               id={`question-${question.id}`}
-              style={delayStyle}
-              className={`glass-panel rounded-lg p-6 stagger-in transition-all duration-300 ${
-                hasError ? "border-[var(--color-error)]/30 shadow-[0_0_15px_rgba(255,180,171,0.05)]" : "focus-within:border-[var(--color-primary)]/20 focus-within:shadow-[0_0_15px_rgba(174,198,255,0.1)]"
+              style={{
+                ...delayStyle,
+                background: "#0f0f0f",
+                borderColor: hasError ? "rgba(255, 180, 171, 0.3)" : "rgba(255, 255, 255, 0.1)",
+              }}
+              className={`relative border rounded-xl stagger-in transition-all duration-300 max-w-3xl mx-auto w-full ${
+                hasError
+                  ? "shadow-[0_0_15px_rgba(255,180,171,0.05)]"
+                  : "hover:border-white/20 focus-within:border-[var(--color-primary)]/20 focus-within:shadow-[0_0_15px_rgba(174,198,255,0.1)]"
               }`}
             >
-              <fieldset className="border-none p-0 m-0">
-                <legend className="block w-full float-left text-[15px] font-semibold text-[var(--color-text-primary)] mb-4 leading-relaxed">
-                  <span className="block font-label-caps text-xs text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
-                    Q{idx + 1} ·{" "}
-                    {question.question_type === "single_choice"
-                      ? "Choose one"
-                      : question.question_type === "mcq"
-                      ? "Choose all that apply"
-                      : "Short answer"}
-                  </span>
-                  {question.question_text}
-                  {question.is_required && <span className="text-[var(--color-error)] ml-1" title="Required">*</span>}
-                </legend>
+              {/* Decorative drag handle block at the top */}
+              <div className="w-full flex justify-center py-2 select-none opacity-40">
+                <span className="material-symbols-outlined text-[18px] text-white/30">
+                  drag_indicator
+                </span>
+              </div>
 
-                <div className="clear-both flex flex-col gap-2.5">
-                  {/* Single choice — custom radios */}
-                  {question.question_type === "single_choice" &&
-                    (question.options ?? []).map((option) => {
-                      const isChecked = answers[question.id] === option;
-                      return (
-                        <label
-                          key={option}
-                          className={`flex items-center gap-3 p-3.5 rounded-lg cursor-pointer border transition-all ${
-                            isChecked
-                              ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)]/30 text-[var(--color-primary)]"
-                              : "bg-transparent border-white/5 text-[var(--color-text-primary)] hover:bg-white/5"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name={`question-${question.id}`}
-                            value={option}
-                            checked={isChecked}
-                            onChange={() => setSingleAnswer(question.id, option)}
-                            className="sr-only"
-                          />
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                            isChecked ? "border-[var(--color-primary)]" : "border-white/20"
-                          }`}>
-                            {isChecked && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]"></div>
-                            )}
-                          </div>
-                          <span className="text-sm font-medium">{option}</span>
-                        </label>
-                      );
-                    })}
-
-                  {/* MCQ — custom checkboxes */}
-                  {question.question_type === "mcq" &&
-                    (question.options ?? []).map((option) => {
-                      const selectedOptions = (answers[question.id] as string[]) ?? [];
-                      const isChecked = selectedOptions.includes(option);
-                      return (
-                        <label
-                          key={option}
-                          className={`flex items-center gap-3 p-3.5 rounded-lg cursor-pointer border transition-all ${
-                            isChecked
-                              ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)]/30 text-[var(--color-primary)]"
-                              : "bg-transparent border-white/5 text-[var(--color-text-primary)] hover:bg-white/5"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            value={option}
-                            checked={isChecked}
-                            onChange={() => toggleMultiAnswer(question.id, option)}
-                            className="sr-only"
-                          />
-                          <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
-                            isChecked ? "border-[var(--color-primary)] bg-[var(--color-primary)]" : "border-white/20"
-                          }`}>
-                            {isChecked && (
-                              <span className="material-symbols-outlined text-[12px] text-[var(--color-on-primary)] font-bold">
-                                check
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-sm font-medium">{option}</span>
-                        </label>
-                      );
-                    })}
-
-                  {/* Short text — custom textarea input */}
-                  {question.question_type === "short_text" && (
-                    <textarea
-                      value={(answers[question.id] as string) ?? ""}
-                      onChange={(e) => setSingleAnswer(question.id, e.target.value)}
-                      rows={4}
-                      placeholder="Your response…"
-                      className={`w-full bg-[#050505] border text-[var(--color-text-primary)] rounded-lg p-3.5 font-body-sm text-sm focus:outline-none transition-all ${
-                        hasError
-                          ? "border-[var(--color-error)]/30 focus:border-[var(--color-error)] focus:ring-4 focus:ring-[var(--color-error)]/10"
-                          : "border-white/8 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10"
-                      }`}
-                    />
-                  )}
+              <div className="flex flex-col gap-6 premium-card-content">
+                {/* Title Area matching builder input field style */}
+                <div className="mobile-input-offset desktop-input-offset">
+                  <div
+                    className="bg-[#1a1a1a] border-b-2 border-white/10 text-[var(--color-text-primary)] font-medium text-[16px] md:text-[18px] rounded-t-md flex items-center justify-between"
+                    style={{
+                      padding: "12px 16px",
+                      minHeight: "56px",
+                      width: "100%",
+                    }}
+                  >
+                    <div className="flex flex-col gap-0.5">
+                      <span className="label-caps text-[10px] text-[var(--color-text-secondary)] tracking-wider">
+                        Q{idx + 1} ·{" "}
+                        {question.question_type === "single_choice"
+                          ? "Choose one"
+                          : question.question_type === "mcq"
+                          ? "Choose all that apply"
+                          : "Short answer"}
+                      </span>
+                      <span>{question.question_text}</span>
+                    </div>
+                    {question.is_required && (
+                      <span className="text-[var(--color-error)] text-lg font-semibold ml-2">*</span>
+                    )}
+                  </div>
                 </div>
+ 
+                {/* Options Area matching builder options row */}
+                <div className="flex flex-col md:flex-row md:justify-between items-stretch md:items-start w-full mt-4 relative mobile-input-offset desktop-input-offset">
+                  <div className="pl-8 md:pl-[35%] w-full flex flex-col gap-[16px]">
+                    {/* Single choice — custom radios */}
+                    {question.question_type === "single_choice" &&
+                      (question.options ?? []).map((option) => {
+                        const isChecked = answers[question.id] === option;
+                        return (
+                          <label
+                            key={option}
+                            className={`flex items-center gap-4 w-full group cursor-pointer`}
+                          >
+                            <input
+                              type="radio"
+                              name={`question-${question.id}`}
+                              value={option}
+                              checked={isChecked}
+                              onChange={() => setSingleAnswer(question.id, option)}
+                              className="sr-only"
+                            />
+                            <div className={`w-6 h-6 border bg-transparent shrink-0 transition-all duration-150 rounded-full flex items-center justify-center ${
+                              isChecked ? "border-[var(--color-primary)]" : "border-white/30 group-hover:border-white/50"
+                            }`}>
+                              {isChecked && (
+                                <div className="w-3.5 h-3.5 rounded-full bg-[var(--color-primary)]"></div>
+                              )}
+                            </div>
+                            <div className={`flex-grow bg-transparent border-b border-transparent py-[10px] px-[14px] min-h-[48px] text-base transition-all duration-150 flex items-center ${
+                              isChecked ? "text-[var(--color-primary)] font-medium" : "text-[var(--color-text-primary)] group-hover:border-white/10"
+                            }`}>
+                              {option}
+                            </div>
+                          </label>
+                        );
+                      })}
 
-                {/* Validation error text */}
-                {hasError && (
-                  <p className="text-[11px] text-[var(--color-error)] mt-2 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-sm">error</span>
-                    {validationErrors[question.id]}
-                  </p>
-                )}
-              </fieldset>
+                    {/* MCQ — custom checkboxes */}
+                    {question.question_type === "mcq" &&
+                      (question.options ?? []).map((option) => {
+                        const selectedOptions = (answers[question.id] as string[]) ?? [];
+                        const isChecked = selectedOptions.includes(option);
+                        return (
+                          <label
+                            key={option}
+                            className={`flex items-center gap-4 w-full group cursor-pointer`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleMultiAnswer(question.id, option)}
+                              className="sr-only"
+                            />
+                            <div className={`w-6 h-6 border bg-transparent shrink-0 transition-all duration-150 rounded-[4px] flex items-center justify-center ${
+                              isChecked ? "bg-[var(--color-primary)] border-[var(--color-primary)]" : "border-white/30 group-hover:border-white/50"
+                            }`}>
+                              {isChecked && (
+                                <span className="material-symbols-outlined text-[16px] text-[#001a43] font-bold">check</span>
+                              )}
+                            </div>
+                            <div className={`flex-grow bg-transparent border-b border-transparent py-[10px] px-[14px] min-h-[48px] text-base transition-all duration-150 flex items-center ${
+                              isChecked ? "text-[var(--color-primary)] font-medium" : "text-[var(--color-text-primary)] group-hover:border-white/10"
+                            }`}>
+                              {option}
+                            </div>
+                          </label>
+                        );
+                      })}
+
+                    {/* Short text — custom textarea input */}
+                    {question.question_type === "short_text" && (
+                      <textarea
+                        value={(answers[question.id] as string) ?? ""}
+                        onChange={(e) => setSingleAnswer(question.id, e.target.value)}
+                        rows={4}
+                        placeholder="Your response…"
+                        className={`w-full bg-[#050505] border text-[var(--color-text-primary)] rounded-lg p-3.5 font-body-sm text-sm focus:outline-none transition-all ${
+                          hasError
+                            ? "border-[var(--color-error)]/30 focus:border-[var(--color-error)] focus:ring-4 focus:ring-[var(--color-error)]/10"
+                            : "border-white/8 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10"
+                        }`}
+                      />
+                    )}
+
+                    {/* Validation error text */}
+                    {hasError && (
+                      <p className="text-[11px] text-[var(--color-error)] mt-2 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">error</span>
+                        {validationErrors[question.id]}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           );
         })}
@@ -314,7 +363,7 @@ export function ParticipantForm({
       {submitError && (
         <div
           role="alert"
-          className="p-4 bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-[var(--color-error)] text-sm rounded-lg flex items-center gap-2"
+          className="p-4 bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-[var(--color-error)] text-sm rounded-lg flex items-center gap-2 max-w-3xl mx-auto w-full"
         >
           <span className="material-symbols-outlined text-lg">error</span>
           {submitError}
@@ -322,18 +371,16 @@ export function ParticipantForm({
       )}
 
       {/* Submit bar */}
-      <div className="mt-4 stagger-in" style={{ animationDelay: `${(questions.length + 2) * 0.1}s` }}>
+      <div className="mt-4 stagger-in max-w-3xl mx-auto w-full flex justify-center" style={{ animationDelay: `${(questions.length + 2) * 0.1}s` }}>
         <Button
           type="submit"
-          size="lg"
+          variant="secondary-light"
+          size="md"
           isLoading={formState === "submitting"}
-          className="w-full btn-primary bg-[var(--color-primary)] text-[var(--color-on-primary-fixed-variant)] rounded-full py-4 text-sm font-label-caps tracking-wider transition-all"
+          className="w-full max-w-[320px] tracking-wider"
         >
           {formState === "submitting" ? "Submitting…" : "Submit feedback"}
         </Button>
-        <p className="text-xs text-[var(--color-text-secondary)] text-center mt-3">
-          Your response is anonymous and will be visible only to CSA members.
-        </p>
       </div>
     </form>
   );
