@@ -100,9 +100,9 @@ export default async function RespondPage({ params }: PageProps) {
       </header>
 
       {/* Main Container */}
-      <main className="w-full max-w-3xl px-5 pb-32 flex flex-col gap-10">
+      <main className="w-full max-w-3xl px-5 pb-32 flex flex-col gap-10 items-center">
         {/* Event Info Header Card matching the Builder banner style */}
-        <Card padding="lg" className="stagger-in w-full mx-auto" style={{ animationDelay: "0.1s", marginBottom: "24px" }}>
+        <Card padding="lg" className="stagger-in w-[calc(100%-32px)] md:w-full mx-auto" style={{ animationDelay: "0.1s", marginBottom: "24px" }}>
           <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-on-surface)", marginBottom: "8px", lineHeight: 1.25 }}>
             {event.title}
           </h1>
@@ -113,7 +113,7 @@ export default async function RespondPage({ params }: PageProps) {
 
         {/* No questions */}
         {!hasQuestions && (
-          <Card padding="lg" className="text-center stagger-in" style={{ animationDelay: "0.2s" }}>
+          <Card padding="lg" className="text-center stagger-in w-[calc(100%-32px)] md:w-full mx-auto" style={{ animationDelay: "0.2s" }}>
             <p className="font-body-sm text-sm text-[var(--color-text-secondary)] margin-0">
               The feedback form for this event hasn&apos;t been set up yet. Please check back later.
             </p>

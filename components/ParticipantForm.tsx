@@ -183,7 +183,7 @@ export function ParticipantForm({
 
   // ── Form ───────────────────────────────────────────────────
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-10">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-10 w-full items-center">
       <style>{`
         /* Mobile and Desktop responsive overrides */
         @media (max-width: 767px) {
@@ -206,7 +206,7 @@ export function ParticipantForm({
           }
         }
       `}</style>
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-10 w-full items-center">
         {questions.map((question, idx) => {
           const hasError = !!validationErrors[question.id];
           const delayStyle = { animationDelay: `${(idx + 2) * 0.1}s` };
@@ -220,7 +220,7 @@ export function ParticipantForm({
                 background: "#0f0f0f",
                 borderColor: hasError ? "rgba(255, 180, 171, 0.3)" : "rgba(255, 255, 255, 0.1)",
               }}
-              className={`relative border rounded-xl stagger-in transition-all duration-300 max-w-3xl mx-auto w-full ${
+              className={`relative border rounded-xl stagger-in transition-all duration-300 max-w-3xl mx-auto w-[calc(100%-32px)] md:w-full ${
                 hasError
                   ? "shadow-[0_0_15px_rgba(255,180,171,0.05)]"
                   : "hover:border-white/20 focus-within:border-[var(--color-primary)]/20 focus-within:shadow-[0_0_15px_rgba(174,198,255,0.1)]"
@@ -363,7 +363,7 @@ export function ParticipantForm({
       {submitError && (
         <div
           role="alert"
-          className="p-4 bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-[var(--color-error)] text-sm rounded-lg flex items-center gap-2 max-w-3xl mx-auto w-full"
+          className="p-4 bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-[var(--color-error)] text-sm rounded-lg flex items-center gap-2 max-w-3xl mx-auto w-[calc(100%-32px)] md:w-full"
         >
           <span className="material-symbols-outlined text-lg">error</span>
           {submitError}
