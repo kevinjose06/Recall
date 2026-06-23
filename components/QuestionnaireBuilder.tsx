@@ -200,41 +200,47 @@ function QuestionCard({
           }
         }
         .premium-dropdown {
-          animation: dropdownReveal 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          background: rgba(18, 18, 20, 0.95);
-          backdrop-filter: blur(24px) saturate(160%);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow: 
-            0 12px 40px -8px rgba(0, 0, 0, 0.7),
-            0 0 20px 2px rgba(123, 164, 255, 0.04);
+          animation: dropdownReveal 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          background: rgba(12, 12, 14, 0.98);
+          backdrop-filter: blur(22px) saturate(150%);
+          border: 1px solid rgba(123, 164, 255, 0.16);
+          box-shadow:
+            0 18px 44px -16px rgba(0, 0, 0, 0.9),
+            0 0 0 1px rgba(255, 255, 255, 0.025);
         }
         .premium-item {
-          transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+          min-height: 42px;
+          transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
         }
         .premium-item:hover {
-          background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
-          transform: translateX(3px);
+          background: rgba(255, 255, 255, 0.055) !important;
         }
         .premium-item-active {
-          background: linear-gradient(90deg, rgba(123, 164, 255, 0.12) 0%, rgba(123, 164, 255, 0.02) 100%) !important;
-          border-left: 2px solid var(--color-primary);
-          border-top-left-radius: 0 !important;
-          border-bottom-left-radius: 0 !important;
+          background: rgba(123, 164, 255, 0.12) !important;
+          box-shadow: inset 0 0 0 1px rgba(123, 164, 255, 0.24);
         }
         .premium-btn {
-          background: rgba(26, 26, 26, 0.6);
+          background: rgba(22, 22, 25, 0.92);
           backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
         }
         .premium-btn:hover {
-          background: rgba(36, 36, 40, 0.9) !important;
-          border-color: rgba(123, 164, 255, 0.35) !important;
-          box-shadow: 0 0 15px 0 rgba(123, 164, 255, 0.08) !important;
+          background: rgba(30, 30, 34, 0.96) !important;
+          border-color: rgba(123, 164, 255, 0.32) !important;
+          box-shadow: 0 10px 24px -18px rgba(123, 164, 255, 0.65) !important;
+        }
+        .type-trigger[data-open="true"] {
+          background: rgba(30, 30, 34, 0.98);
+          border-color: rgba(123, 164, 255, 0.42);
+          box-shadow: 0 12px 28px -20px rgba(123, 164, 255, 0.75);
+        }
+        .type-dropdown-menu {
+          padding: 12px 20px !important;
         }
         .premium-icon-box {
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           border-radius: 8px;
           display: flex;
           align-items: center;
@@ -243,6 +249,38 @@ function QuestionCard({
           border: 1px solid rgba(255, 255, 255, 0.04);
           transition: all 0.2s ease;
           flex-shrink: 0;
+        }
+        .type-option-icon-box {
+          width: 28px;
+          height: 28px;
+          border-radius: 7px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.055);
+          color: rgba(255, 255, 255, 0.52);
+          flex-shrink: 0;
+          transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+        }
+        .premium-item:hover .type-option-icon-box {
+          background: rgba(255, 255, 255, 0.07);
+          color: rgba(255, 255, 255, 0.86);
+        }
+        .premium-item-active .type-option-icon-box {
+          background: rgba(123, 164, 255, 0.14);
+          border-color: rgba(123, 164, 255, 0.26);
+          color: var(--color-primary);
+        }
+        @media (min-width: 768px) {
+          .type-dropdown-menu {
+            padding-left: 22px !important;
+            padding-right: 22px !important;
+          }
+          .premium-icon-box {
+            width: 32px;
+            height: 32px;
+          }
         }
         .premium-item:hover .premium-icon-box {
           background: rgba(255, 255, 255, 0.08);
@@ -313,10 +351,10 @@ function QuestionCard({
         </div>
 
         {/* Second Row: Options and Right Controls */}
-        <div className="flex flex-col md:flex-row md:justify-between items-stretch md:items-start w-full mt-2 relative gap-6 md:gap-0">
+        <div className="flex flex-col md:flex-row md:justify-between items-stretch md:items-start w-full mt-2 relative gap-5 md:gap-0">
           
           {/* Options Area */}
-          <div className="pl-1 w-full md:max-w-[60%]">
+          <div className="order-2 pl-1 w-full md:order-1 md:max-w-[60%]">
             {hasOptions && (
               <div className="flex flex-col gap-[14px]">
                 {question.options.map((opt, i) => (
@@ -377,60 +415,63 @@ function QuestionCard({
           </div>
 
           {/* Right Controls Column */}
-          <div className="flex flex-col items-stretch md:items-end gap-5 flex-shrink-0 w-full md:w-auto md:ml-4 animate-fade-in mobile-right-controls-offset desktop-right-controls-offset">
+          <div className="contents md:order-2 md:flex md:flex-col md:items-end md:gap-5 md:flex-shrink-0 md:w-auto md:ml-4 animate-fade-in mobile-right-controls-offset desktop-right-controls-offset">
             {/* Question Type Dropdown */}
-            <div className="relative" ref={dropdownRef}>
+            <div className="relative order-1 w-fit max-w-full md:order-none" ref={dropdownRef}>
               <div 
-                className={`flex items-center justify-between gap-4 rounded-lg cursor-pointer select-none premium-btn w-full md:w-auto ${
+                className={`type-trigger flex w-fit max-w-full items-center justify-between gap-2 rounded-lg cursor-pointer select-none premium-btn px-3 py-2 md:min-w-[220px] md:gap-4 md:px-4 md:py-2.5 ${
                   disabled ? 'opacity-50 cursor-not-allowed border-white/5' : ''
                 }`}
-                style={{ padding: '10px 16px', minWidth: '220px' }}
+                data-open={isDropdownOpen ? "true" : "false"}
+                aria-haspopup="listbox"
+                aria-expanded={isDropdownOpen}
                 onClick={() => !disabled && setIsDropdownOpen(!isDropdownOpen)}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   <div className="premium-icon-box" style={{ background: 'rgba(123, 164, 255, 0.1)', borderColor: 'rgba(123, 164, 255, 0.2)' }}>
-                    <span className="material-symbols-outlined text-[var(--color-primary)] text-[20px]">
+                    <span className="material-symbols-outlined text-[var(--color-primary)] text-[18px] md:text-[20px]">
                       {QUESTION_TYPE_ICONS[question.question_type]}
                     </span>
                   </div>
-                  <span className="font-body-sm text-base font-medium whitespace-nowrap text-white">{QUESTION_TYPE_LABELS[question.question_type]}</span>
+                  <span className="font-body-sm text-sm font-medium whitespace-nowrap text-white md:text-base">{QUESTION_TYPE_LABELS[question.question_type]}</span>
                 </div>
-                <span className={`material-symbols-outlined text-[var(--color-text-secondary)] text-[22px] transition-transform duration-250 ${isDropdownOpen ? 'rotate-180 text-white' : ''}`}>
+                <span className={`material-symbols-outlined text-[var(--color-text-secondary)] text-[20px] transition-transform duration-250 md:text-[22px] ${isDropdownOpen ? 'rotate-180 text-white' : ''}`}>
                   expand_more
                 </span>
               </div>
               
               {isDropdownOpen && !disabled && (
-                <div className="absolute top-[calc(100%+6px)] right-0 w-full min-w-[220px] z-50 premium-dropdown p-1.5 flex flex-col gap-0.5 rounded-xl origin-top">
+                <div
+                  className="absolute left-0 top-[calc(100%+8px)] z-50 flex w-[min(270px,calc(100vw-72px))] origin-top flex-col gap-1 rounded-xl premium-dropdown type-dropdown-menu md:left-auto md:right-0 md:w-[280px]"
+                  role="listbox"
+                >
                   {(Object.keys(QUESTION_TYPE_LABELS) as QuestionType[]).map((type) => {
                     const isActive = question.question_type === type;
                     return (
                       <div
                         key={type}
-                        className={`px-3 py-2.5 cursor-pointer font-body-sm text-sm rounded-lg flex items-center justify-between group/item premium-item ${
+                        className={`cursor-pointer rounded-lg px-3 py-2 font-body-sm text-[0.92rem] flex items-center justify-between gap-3 group/item premium-item ${
                           isActive 
                             ? 'premium-item-active text-[var(--color-primary)] font-semibold' 
                             : 'text-[var(--color-text-secondary)] hover:text-white'
                         }`}
+                        role="option"
+                        aria-selected={isActive}
                         onClick={() => {
                           changeQuestionType(type);
                           setIsDropdownOpen(false);
                         }}
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`premium-icon-box transition-all ${
-                            isActive 
-                              ? 'bg-[var(--color-primary)]/15 border-[var(--color-primary)]/20 text-[var(--color-primary)]' 
-                              : 'text-white/40 group-hover/item:text-white/80'
-                          }`}>
+                          <div className="type-option-icon-box">
                             <span className="material-symbols-outlined text-[18px]">
                               {QUESTION_TYPE_ICONS[type]}
                             </span>
                           </div>
-                          <span>{QUESTION_TYPE_LABELS[type]}</span>
+                          <span className="whitespace-nowrap leading-none">{QUESTION_TYPE_LABELS[type]}</span>
                         </div>
                         {isActive && (
-                          <span className="material-symbols-outlined text-[var(--color-primary)] text-[18px] mr-1">check</span>
+                          <span className="material-symbols-outlined mr-0.5 text-[18px] text-[var(--color-primary)]">check</span>
                         )}
                       </div>
                     );
@@ -440,7 +481,7 @@ function QuestionCard({
             </div>
 
             {/* Footer actions: Duplicate, Delete, Required Toggle */}
-            <div className="flex items-center justify-end gap-6 relative" style={{ zIndex: 10 }}>
+            <div className="order-3 flex items-center justify-end gap-6 relative md:order-none" style={{ zIndex: 10 }}>
               <button
                 type="button"
                 onClick={onRemove}
