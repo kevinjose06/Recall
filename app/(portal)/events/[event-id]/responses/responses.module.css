@@ -68,6 +68,10 @@
   grid-column: 1 / -1;
 }
 
+.ratingCard {
+  grid-column: 1 / -1;
+}
+
 .shortTextCard {
   grid-column: 1 / -1;
   min-height: 340px;
@@ -80,6 +84,10 @@
 
   .multipleChoiceCard {
     grid-column: span 8;
+  }
+
+  .ratingCard {
+    grid-column: span 6;
   }
 }
 
@@ -267,6 +275,29 @@
   line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.ratingLabel {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.ratingStars {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  color: var(--accent-color);
+  line-height: 1;
+}
+
+.ratingStars :global(.material-symbols-outlined) {
+  font-size: 17px;
+  font-variation-settings: "FILL" 1;
 }
 
 .barValue {

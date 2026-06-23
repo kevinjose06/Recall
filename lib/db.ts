@@ -47,7 +47,10 @@ export async function saveQuestions(eventId: string, questions: Array<Omit<Quest
       event_id: eventId,
       question_text: q.question_text,
       question_type: q.question_type,
-      options: q.question_type === "short_text" ? null : q.options,
+      options:
+        q.question_type === "short_text" || q.question_type === "star_rating"
+          ? null
+          : q.options,
       order_index: i,
       is_required: q.is_required ?? false,
     });

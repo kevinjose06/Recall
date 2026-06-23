@@ -19,12 +19,14 @@ const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   single_choice: "Single choice",
   mcq: "Multiple choice",
   short_text: "Short text",
+  star_rating: "Star rating",
 };
 
 const QUESTION_TYPE_ICONS: Record<QuestionType, string> = {
   single_choice: "radio_button_checked",
   mcq: "check_box",
   short_text: "short_text",
+  star_rating: "star",
 };
 
 interface BuilderProps {
@@ -145,7 +147,12 @@ function QuestionCard({
 
   function changeQuestionType(newType: QuestionType) {
     if (newType === question.question_type) return;
-    const newOptions = newType === "short_text" ? [] : (question.options.length < 2 ? ["", ""] : question.options);
+    const newOptions =
+      newType === "short_text" || newType === "star_rating"
+        ? []
+        : question.options.length < 2
+        ? ["", ""]
+        : question.options;
     onChange({ ...question, question_type: newType, options: newOptions as string[] });
   }
 
@@ -349,6 +356,22 @@ function QuestionCard({
                   placeholder="Short answer text"
                   className="w-full bg-transparent border-b border-white/20 pb-2 font-body-sm text-sm text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed outline-none"
                 />
+              </div>
+            )}
+
+            {question.question_type === "star_rating" && (
+              <div className="pt-2 pb-4 px-1 mobile-short-text-offset desktop-short-text-offset">
+                <div className="flex items-center gap-2 text-[var(--color-primary)]">
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <span
+                      key={rating}
+                      className="material-symbols-outlined text-[28px]"
+                      aria-hidden="true"
+                    >
+                      star
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -584,7 +607,9 @@ export function QuestionnaireBuilder({
         question_text: q.question_text.trim(),
         question_type: q.question_type,
         options:
-          q.question_type === "short_text" ? null : q.options.map((o) => o.trim()),
+          q.question_type === "short_text" || q.question_type === "star_rating"
+            ? null
+            : q.options.map((o) => o.trim()),
         order_index: i,
         is_required: q.is_required,
       }));

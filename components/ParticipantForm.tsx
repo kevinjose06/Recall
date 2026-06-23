@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/Button";
 import { getQuestionnaireSignature } from "@/lib/questionnaire-signature";
-import type { Question } from "@/lib/types";
+import type { AnswerValue, Question } from "@/lib/types";
 
 interface ParticipantFormProps {
   eventId: string;
@@ -81,13 +81,20 @@ function useLocalStorageValue(key: string) {
   return React.useSyncExternalStore(subscribe, getSnapshot, () => null);
 }
 
+function hasAnswerValue(value: AnswerValue | undefined) {
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "number") return value >= 1 && value <= 5;
+  if (typeof value === "string") return value.trim() !== "";
+  return false;
+}
+
 export function ParticipantForm({
   eventId,
   eventTitle,
   questions,
 }: ParticipantFormProps) {
   const [formState, setFormState] = React.useState<FormState>("idle");
-  const [answers, setAnswers] = React.useState<Record<string, string | string[]>>({});
+  const [answers, setAnswers] = React.useState<Record<string, AnswerValue>>({});
   const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
   const [submitError, setSubmitError] = React.useState("");
   const questionnaireSignature = React.useMemo(
@@ -98,6 +105,13 @@ export function ParticipantForm({
   const submittedCurrentQuestionnaire = useLocalStorageValue(submissionStorageKey);
 
   function setSingleAnswer(questionId: string, value: string) {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    if (validationErrors[questionId]) {
+      setValidationErrors((prev) => ({ ...prev, [questionId]: "" }));
+    }
+  }
+
+  function setRatingAnswer(questionId: string, value: number) {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
     if (validationErrors[questionId]) {
       setValidationErrors((prev) => ({ ...prev, [questionId]: "" }));
@@ -141,6 +155,11 @@ export function ParticipantForm({
             errors[q.id] = "Please enter a response.";
             valid = false;
           }
+        } else if (q.question_type === "star_rating") {
+          if (typeof answer !== "number" || answer < 1 || answer > 5) {
+            errors[q.id] = "Please select a rating.";
+            valid = false;
+          }
         }
       }
     });
@@ -165,14 +184,20 @@ export function ParticipantForm({
 
     const respondentToken = getOrCreateRespondentToken(eventId);
 
+    const payloadAnswers = questions
+      .map((q) => ({
+        question_id: q.id,
+        answer_value: answers[q.id],
+      }))
+      .filter((answer): answer is { question_id: string; answer_value: AnswerValue } =>
+        hasAnswerValue(answer.answer_value)
+      );
+
     const payload = {
       event_id: eventId,
       respondent_token: respondentToken,
       questionnaire_signature: questionnaireSignature,
-      answers: questions.map((q) => ({
-        question_id: q.id,
-        answer_value: answers[q.id],
-      })),
+      answers: payloadAnswers,
     };
 
     try {
@@ -303,6 +328,8 @@ export function ParticipantForm({
                           ? "Choose one"
                           : question.question_type === "mcq"
                           ? "Choose all that apply"
+                          : question.question_type === "star_rating"
+                          ? "Rate from 1 to 5"
                           : "Short answer"}
                       </span>
                       <span>{question.question_text}</span>
@@ -394,6 +421,42 @@ export function ParticipantForm({
                             : "border-white/8 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10"
                         }`}
                       />
+                    )}
+
+                    {question.question_type === "star_rating" && (
+                      <div className="flex flex-nowrap items-center gap-2" role="radiogroup" aria-label={question.question_text}>
+                        {[1, 2, 3, 4, 5].map((rating) => {
+                          const selectedRating =
+                            typeof answers[question.id] === "number"
+                              ? (answers[question.id] as number)
+                              : 0;
+                          const isSelected = selectedRating === rating;
+                          const isFilled = selectedRating >= rating;
+
+                          return (
+                            <button
+                              key={rating}
+                              type="button"
+                              role="radio"
+                              aria-checked={isSelected}
+                              aria-label={`${rating} star${rating === 1 ? "" : "s"}`}
+                              onClick={() => setRatingAnswer(question.id, rating)}
+                              className={`h-11 w-11 rounded-lg border transition-all flex items-center justify-center ${
+                                isFilled
+                                  ? "border-[var(--color-primary)]/35 bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                                  : "border-white/10 bg-white/[0.03] text-white/30 hover:text-[var(--color-primary)] hover:border-[var(--color-primary)]/25"
+                              }`}
+                            >
+                              <span
+                                className="material-symbols-outlined text-[28px]"
+                                style={{ fontVariationSettings: isFilled ? "'FILL' 1" : "'FILL' 0" }}
+                              >
+                                star
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     )}
 
                     {/* Validation error text */}

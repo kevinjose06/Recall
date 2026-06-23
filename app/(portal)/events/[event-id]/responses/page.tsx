@@ -291,6 +291,87 @@ export default async function ResponsesPage({ params }: PageProps) {
               );
             }
 
+            // Bar Chart - Star Rating
+            if (question.question_type === "star_rating") {
+              const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+              const ratingAnswers = qAnswers
+                .map((answer) => {
+                  const value = answer.answer_value;
+                  const rating = typeof value === "number" ? value : Number(value);
+                  return Number.isInteger(rating) && rating >= 1 && rating <= 5 ? rating : null;
+                })
+                .filter((rating): rating is number => rating !== null);
+
+              ratingAnswers.forEach((rating) => {
+                counts[rating]++;
+              });
+
+              const total = ratingAnswers.length || 1;
+              const average =
+                ratingAnswers.length > 0
+                  ? ratingAnswers.reduce((sum, rating) => sum + rating, 0) / ratingAnswers.length
+                  : 0;
+              const ratingData = [5, 4, 3, 2, 1].map((rating) => {
+                const count = counts[rating] || 0;
+                const percent = Math.round((count / total) * 100);
+                return { rating, count, percent };
+              });
+
+              return (
+                <section
+                  key={question.id}
+                  className={`${styles.questionCard} ${styles.ratingCard}`}
+                  style={accentStyle(colorHex)}
+                >
+                  <header className={styles.questionHeader}>
+                    <div className={styles.questionMetaRow}>
+                      <span className={styles.questionMeta}>
+                        Q{idx + 1} â€¢ Star Rating
+                      </span>
+                      <span className={styles.questionHint}>
+                        Average {average.toFixed(1)} / 5
+                      </span>
+                    </div>
+                    <h2 className={styles.questionTitle}>
+                      {question.question_text}
+                    </h2>
+                  </header>
+
+                  <div className={styles.barList}>
+                    {ratingData.map((data) => (
+                      <div key={data.rating} className={styles.barItem}>
+                        <div className={styles.barRow}>
+                          <span className={styles.ratingLabel}>
+                            <span className={styles.ratingStars} aria-hidden="true">
+                              {Array.from({ length: data.rating }).map((_, starIdx) => (
+                                <span key={starIdx} className="material-symbols-outlined">
+                                  star
+                                </span>
+                              ))}
+                            </span>
+                            <span>{data.rating}</span>
+                          </span>
+                          <span className={styles.barValue}>
+                            {data.count}
+                            <span>({data.percent}%)</span>
+                          </span>
+                        </div>
+                        <div className={styles.barTrack}>
+                          <div
+                            className={styles.barFill}
+                            style={{
+                              width: `${data.percent}%`,
+                              backgroundColor: colorHex,
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            }
+
             // Scrollable List - Short Text
             const textResponses = qAnswers
               .sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime())

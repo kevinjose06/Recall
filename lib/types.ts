@@ -9,7 +9,8 @@ export type EventType =
   | "Technical Talk"
   | "Other";
 
-export type QuestionType = "single_choice" | "mcq" | "short_text";
+export type QuestionType = "single_choice" | "mcq" | "short_text" | "star_rating";
+export type AnswerValue = string | string[] | number;
 
 export interface Event {
   id: string;
@@ -27,7 +28,7 @@ export interface Question {
   event_id: string;
   question_text: string;
   question_type: QuestionType;
-  options: string[] | null; // null for short_text
+  options: string[] | null; // null for short_text and star_rating
   order_index: number;
   is_required?: boolean;
 }
@@ -44,7 +45,7 @@ export interface Answer {
   id: string; // usually question_id
   response_id: string;
   question_id: string;
-  answer_value: string | string[];
+  answer_value: AnswerValue;
 }
 
 // ─── API payloads ───
@@ -55,7 +56,7 @@ export interface SubmitResponsePayload {
   questionnaire_signature: string;
   answers: {
     question_id: string;
-    answer_value: string | string[];
+    answer_value: AnswerValue;
   }[];
 }
 
