@@ -1,11 +1,12 @@
 export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventAdmin, getQuestionsAdmin, getResponsesAndAnswersAdmin } from "@/lib/db-admin";
-import type { Question, Answer } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import styles from "./responses.module.css";
 
 interface PageProps {
   params: Promise<{ "event-id": string }>;
@@ -25,6 +26,10 @@ function formatDateTime(iso: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function accentStyle(color: string): CSSProperties & { "--accent-color": string } {
+  return { "--accent-color": color };
 }
 
 export default async function ResponsesPage({ params }: PageProps) {
@@ -79,9 +84,9 @@ export default async function ResponsesPage({ params }: PageProps) {
       </Card>
 
       {/* Per-question analytics bento grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className={styles.analyticsGrid}>
         {(!questions || questions.length === 0) && (
-          <div className="glass-panel rounded-lg p-6 lg:col-span-12 text-center text-[var(--color-text-secondary)]">
+          <div className={styles.messageCard}>
             No questions configured yet.{" "}
             <Link href={`/events/${eventId}/builder`} className="text-[var(--color-primary)]">
               Open builder
@@ -90,7 +95,7 @@ export default async function ResponsesPage({ params }: PageProps) {
         )}
 
         {questions && questions.length > 0 && responseCount === 0 && (
-          <div className="glass-panel rounded-lg p-6 lg:col-span-12 text-center text-[var(--color-text-secondary)]">
+          <div className={styles.messageCard}>
             No responses yet. Share the participant link to collect feedback.
           </div>
         )}
@@ -100,22 +105,13 @@ export default async function ResponsesPage({ params }: PageProps) {
             const qAnswers = answers.filter((a) => a.question_id === question.id);
             const indexMod = idx % 3;
 
-            // Define left-accent stripe borders based on modulo
-            let accentBorderClass = "";
-            let accentBgHover = "";
             let colorHex = "#aec6ff"; // primary
 
             if (indexMod === 0) {
-              accentBorderClass = "bg-[var(--color-primary)]/20 group-hover:bg-[var(--color-primary)]";
-              accentBgHover = "hover:border-[var(--color-primary)]/20";
               colorHex = "#aec6ff";
             } else if (indexMod === 1) {
-              accentBorderClass = "bg-[var(--color-secondary)]/20 group-hover:bg-[var(--color-secondary)]";
-              accentBgHover = "hover:border-[var(--color-secondary)]/20";
               colorHex = "#4edea3";
             } else {
-              accentBorderClass = "bg-[var(--color-tertiary)]/20 group-hover:bg-[var(--color-tertiary)]";
-              accentBgHover = "hover:border-[var(--color-tertiary)]/20";
               colorHex = "#ffb596";
             }
 
@@ -144,28 +140,32 @@ export default async function ResponsesPage({ params }: PageProps) {
 
               // Calculate dash offsets for SVG donut chart segments
               let accumulatedPercent = 0;
+              const capturedPercent =
+                responseCount > 0
+                  ? Math.round((qAnswers.length / responseCount) * 100)
+                  : 0;
 
               return (
                 <section
                   key={question.id}
-                  className={`glass-panel p-6 lg:col-span-5 flex flex-col gap-6 relative group overflow-hidden transition-all duration-300 rounded-lg ${accentBgHover}`}
+                  className={`${styles.questionCard} ${styles.singleChoiceCard}`}
+                  style={accentStyle(colorHex)}
                 >
-                  <div className={`absolute top-0 left-0 w-2 h-full transition-colors ${accentBorderClass}`}></div>
-                  <header>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="bg-[var(--color-bg-highest)] px-2 py-1 rounded text-[10px] font-label-caps text-[var(--color-text-secondary)] uppercase tracking-wider">
+                  <header className={styles.questionHeader}>
+                    <div className={styles.questionMetaRow}>
+                      <span className={styles.questionMeta}>
                         Q{idx + 1} • Single Choice
                       </span>
                     </div>
-                    <h2 className="font-headline-md text-headline-md text-[var(--color-text-primary)]">
+                    <h2 className={styles.questionTitle}>
                       {question.question_text}
                     </h2>
                   </header>
 
-                  <div className="flex flex-col md:flex-row items-center gap-8 justify-center flex-1">
+                  <div className={styles.singleChoiceBody}>
                     {/* SVG Donut */}
-                    <div className="relative w-40 h-40 flex-shrink-0">
-                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                    <div className={styles.donutWrap}>
+                      <svg className={styles.donutSvg} viewBox="0 0 36 36">
                         <circle
                           cx="18"
                           cy="18"
@@ -198,25 +198,25 @@ export default async function ResponsesPage({ params }: PageProps) {
                           );
                         })}
                       </svg>
-                      <div className="absolute inset-0 flex items-center justify-center flex-col">
-                        <span className="font-headline-md text-headline-md font-bold text-[var(--color-text-primary)]">
-                          100%
+                      <div className={styles.donutCenter}>
+                        <span className={styles.donutValue}>
+                          {capturedPercent}%
                         </span>
-                        <span className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-widest">
+                        <span className={styles.donutLabel}>
                           Captured
                         </span>
                       </div>
                     </div>
 
                     {/* Legend */}
-                    <div className="flex flex-col gap-3 font-body-sm text-sm w-full md:w-auto flex-1">
+                    <div className={styles.legend}>
                       {segments.map((seg, sIdx) => (
-                        <div key={sIdx} className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: seg.color }}></div>
-                            <span className="text-[var(--color-text-secondary)] line-clamp-1">{seg.name}</span>
+                        <div key={sIdx} className={styles.legendItem}>
+                          <div className={styles.legendLabel}>
+                            <div className={styles.legendDot} style={{ backgroundColor: seg.color }}></div>
+                            <span className={styles.legendText}>{seg.name}</span>
                           </div>
-                          <span className="text-[var(--color-text-primary)] font-mono font-medium">{seg.percent}%</span>
+                          <span className={styles.legendValue}>{seg.percent}%</span>
                         </div>
                       ))}
                     </div>
@@ -248,33 +248,36 @@ export default async function ResponsesPage({ params }: PageProps) {
               return (
                 <section
                   key={question.id}
-                  className={`glass-panel p-6 lg:col-span-7 flex flex-col gap-6 relative group transition-all duration-300 rounded-lg ${accentBgHover}`}
+                  className={`${styles.questionCard} ${styles.multipleChoiceCard}`}
+                  style={accentStyle(colorHex)}
                 >
-                  <div className={`absolute top-0 left-0 w-2 h-full transition-colors ${accentBorderClass}`}></div>
-                  <header>
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="bg-[var(--color-bg-highest)] px-2 py-1 rounded text-[10px] font-label-caps text-[var(--color-text-secondary)] uppercase tracking-wider">
+                  <header className={styles.questionHeader}>
+                    <div className={styles.questionMetaRow}>
+                      <span className={styles.questionMeta}>
                         Q{idx + 1} • Multiple Choice
                       </span>
-                      <span className="text-[10px] text-[var(--color-text-secondary)] border border-white/10 px-2 py-0.5 rounded">
+                      <span className={styles.questionHint}>
                         Respondents may select multiple
                       </span>
                     </div>
-                    <h2 className="font-headline-md text-headline-md text-[var(--color-text-primary)]">
+                    <h2 className={styles.questionTitle}>
                       {question.question_text}
                     </h2>
                   </header>
 
-                  <div className="flex flex-col gap-4 justify-center flex-1">
+                  <div className={styles.barList}>
                     {barData.map((data, bIdx) => (
-                      <div key={bIdx} className="flex flex-col gap-1.5">
-                        <div className="flex justify-between font-body-sm text-sm">
-                          <span className="text-[var(--color-text-secondary)]">{data.name}</span>
-                          <span className="font-mono text-[var(--color-text-primary)]">{data.count}</span>
+                      <div key={bIdx} className={styles.barItem}>
+                        <div className={styles.barRow}>
+                          <span className={styles.barName}>{data.name}</span>
+                          <span className={styles.barValue}>
+                            {data.count}
+                            <span>({data.percent}%)</span>
+                          </span>
                         </div>
-                        <div className="h-2 w-full bg-[var(--color-bg-highest)] rounded-full overflow-hidden">
+                        <div className={styles.barTrack}>
                           <div
-                            className="h-full rounded-full transition-all duration-1000"
+                            className={styles.barFill}
                             style={{
                               width: `${data.percent}%`,
                               backgroundColor: colorHex,
@@ -299,37 +302,37 @@ export default async function ResponsesPage({ params }: PageProps) {
             return (
               <section
                 key={question.id}
-                className={`glass-panel p-6 lg:col-span-12 flex flex-col gap-6 relative group h-[400px] transition-all duration-300 rounded-lg ${accentBgHover}`}
+                className={`${styles.questionCard} ${styles.shortTextCard}`}
+                style={accentStyle(colorHex)}
               >
-                <div className={`absolute top-0 left-0 w-2 h-full transition-colors ${accentBorderClass}`}></div>
-                <header className="flex-shrink-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="bg-[var(--color-bg-highest)] px-2 py-1 rounded text-[10px] font-label-caps text-[var(--color-text-secondary)] uppercase tracking-wider">
+                <header className={styles.questionHeader}>
+                  <div className={styles.questionMetaRow}>
+                    <span className={styles.questionMeta}>
                       Q{idx + 1} • Short Text
                     </span>
                   </div>
-                  <h2 className="font-headline-md text-headline-md text-[var(--color-text-primary)]">
+                  <h2 className={styles.questionTitle}>
                     {question.question_text}
                   </h2>
                 </header>
 
-                <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-3 custom-scrollbar">
+                <div className={styles.textList}>
                   {textResponses.map((tr, trIdx) => (
                     <div
                       key={trIdx}
-                      className="bg-[var(--color-bg-lowest)] border border-white/5 p-4 rounded-lg flex flex-col gap-2 hover:bg-[var(--color-bg-subtle)] transition-colors"
+                      className={styles.textResponse}
                     >
-                      <p className="font-body-sm text-sm text-[var(--color-text-primary)]">
+                      <p className={styles.textResponseCopy}>
                         &quot;{tr.text}&quot;
                       </p>
-                      <span className="font-label-caps text-[10px] text-[var(--color-text-secondary)]/60 flex items-center gap-1">
+                      <span className={styles.textResponseTime}>
                         <span className="material-symbols-outlined text-sm">schedule</span>
                         {formatDateTime(tr.submitted_at)}
                       </span>
                     </div>
                   ))}
                   {textResponses.length === 0 && (
-                    <div className="text-center text-[var(--color-text-secondary)] py-8">
+                    <div className={styles.emptyText}>
                       No answers submitted.
                     </div>
                   )}
@@ -340,23 +343,6 @@ export default async function ResponsesPage({ params }: PageProps) {
         )}
       </div>
 
-      <style>{`
-        /* Custom scrollbar for text responses */
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(255, 255, 255, 0.1);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(255, 255, 255, 0.2);
-        }
-      `}</style>
     </div>
   );
 }
-
