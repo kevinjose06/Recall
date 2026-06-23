@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/Button";
+import { getQuestionnaireSignature } from "@/lib/questionnaire-signature";
 import type { Question } from "@/lib/types";
 
 interface ParticipantFormProps {
@@ -21,9 +22,64 @@ function generateUUID(): string {
   });
 }
 
-const STORAGE_KEY_PREFIX = "recall_respondent_";
+const RESPONDENT_KEY_PREFIX = "recall_respondent_";
+const SUBMISSION_KEY_PREFIX = "recall_submission_";
 
 type FormState = "idle" | "submitting" | "success" | "already_submitted" | "error";
+
+function getLocalStorageItem(key: string) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function setLocalStorageItem(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // If storage is unavailable, the server-side duplicate guard still applies.
+  }
+}
+
+function getOrCreateRespondentToken(eventId: string) {
+  const storageKey = `${RESPONDENT_KEY_PREFIX}${eventId}`;
+  const existing = getLocalStorageItem(storageKey);
+
+  if (existing) {
+    return existing;
+  }
+
+  const token = generateUUID();
+  setLocalStorageItem(storageKey, token);
+  return token;
+}
+
+function useLocalStorageValue(key: string) {
+  const subscribe = React.useCallback(
+    (onStoreChange: () => void) => {
+      if (typeof window === "undefined") return () => {};
+
+      function handleStorage(event: StorageEvent) {
+        if (event.key === key || event.key === null) {
+          onStoreChange();
+        }
+      }
+
+      window.addEventListener("storage", handleStorage);
+      return () => window.removeEventListener("storage", handleStorage);
+    },
+    [key]
+  );
+
+  const getSnapshot = React.useCallback(() => {
+    if (typeof window === "undefined") return null;
+    return getLocalStorageItem(key);
+  }, [key]);
+
+  return React.useSyncExternalStore(subscribe, getSnapshot, () => null);
+}
 
 export function ParticipantForm({
   eventId,
@@ -34,15 +90,12 @@ export function ParticipantForm({
   const [answers, setAnswers] = React.useState<Record<string, string | string[]>>({});
   const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
   const [submitError, setSubmitError] = React.useState("");
-
-  // Check and set respondent token
-  React.useEffect(() => {
-    const storageKey = `${STORAGE_KEY_PREFIX}${eventId}`;
-    const existing = localStorage.getItem(storageKey);
-    if (existing) {
-      setFormState("already_submitted");
-    }
-  }, [eventId]);
+  const questionnaireSignature = React.useMemo(
+    () => getQuestionnaireSignature(questions),
+    [questions]
+  );
+  const submissionStorageKey = `${SUBMISSION_KEY_PREFIX}${eventId}_${questionnaireSignature}`;
+  const submittedCurrentQuestionnaire = useLocalStorageValue(submissionStorageKey);
 
   function setSingleAnswer(questionId: string, value: string) {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
@@ -110,12 +163,12 @@ export function ParticipantForm({
     setFormState("submitting");
     setSubmitError("");
 
-    const storageKey = `${STORAGE_KEY_PREFIX}${eventId}`;
-    const respondentToken = generateUUID();
+    const respondentToken = getOrCreateRespondentToken(eventId);
 
     const payload = {
       event_id: eventId,
       respondent_token: respondentToken,
+      questionnaire_signature: questionnaireSignature,
       answers: questions.map((q) => ({
         question_id: q.id,
         answer_value: answers[q.id],
@@ -129,18 +182,17 @@ export function ParticipantForm({
         body: JSON.stringify(payload),
       });
 
-      if (res.status === 409) {
-        setFormState("already_submitted");
-        return;
-      }
-
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
+        if (res.status === 409 && body.code === "ALREADY_SUBMITTED") {
+          setLocalStorageItem(submissionStorageKey, respondentToken);
+          setFormState("already_submitted");
+          return;
+        }
         throw new Error(body.error ?? "Submission failed");
       }
 
-      // Persist token to prevent duplicate submissions
-      localStorage.setItem(storageKey, respondentToken);
+      setLocalStorageItem(submissionStorageKey, respondentToken);
       setFormState("success");
     } catch (err) {
       console.error(err);
@@ -152,7 +204,7 @@ export function ParticipantForm({
   }
 
   // ── Already submitted ──────────────────────────────────────
-  if (formState === "already_submitted") {
+  if (formState === "already_submitted" || (formState === "idle" && submittedCurrentQuestionnaire)) {
     return (
       <div className="text-center py-12 px-6 animate-fade-slide-up">
         <div className="w-14 h-14 rounded-[var(--radius-xl)] bg-[var(--color-tertiary)]/10 border border-[var(--color-tertiary)]/20 flex items-center justify-center mx-auto mb-4 text-[var(--color-tertiary)]">
