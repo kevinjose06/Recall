@@ -239,9 +239,9 @@ export function ParticipantForm({
   // ── Already submitted ──────────────────────────────────────
   if (formState === "already_submitted" || (formState === "idle" && submittedCurrentQuestionnaire)) {
     return (
-      <div className="text-center py-12 px-6 animate-fade-slide-up">
-        <div className="w-14 h-14 rounded-[var(--radius-xl)] bg-[var(--color-tertiary)]/10 border border-[var(--color-tertiary)]/20 flex items-center justify-center mx-auto mb-4 text-[var(--color-tertiary)]">
-          <span className="material-symbols-outlined text-3xl">warning</span>
+      <div className="flex flex-col items-center text-center py-12 px-6 animate-fade-slide-up w-full">
+        <div className="w-14 h-14 rounded-[var(--radius-xl)] bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 flex items-center justify-center mb-4 text-[var(--color-error)]">
+          <span className="material-symbols-outlined text-3xl">error</span>
         </div>
         <h2 className="text-xl font-semibold mb-2 text-[var(--color-text-primary)]">Already submitted</h2>
         <p className="text-[var(--color-text-secondary)] max-w-[320px] mx-auto text-sm">
@@ -254,8 +254,8 @@ export function ParticipantForm({
   // ── Success ────────────────────────────────────────────────
   if (formState === "success") {
     return (
-      <div className="text-center py-12 px-6 animate-fade-slide-up">
-        <div className="w-16 h-16 rounded-[var(--radius-xl)] bg-[var(--color-secondary)]/10 border border-[var(--color-secondary)]/20 flex items-center justify-center mx-auto mb-5 text-[var(--color-secondary)]">
+      <div className="flex flex-col items-center text-center py-12 px-6 animate-fade-slide-up w-full">
+        <div className="w-16 h-16 rounded-[var(--radius-xl)] bg-[var(--color-secondary)]/10 border border-[var(--color-secondary)]/20 flex items-center justify-center mb-5 text-[var(--color-secondary)]">
           <span className="material-symbols-outlined text-4xl">check_circle</span>
         </div>
         <h2 className="text-2xl font-bold mb-2 text-[var(--color-text-primary)]">Thank you!</h2>

@@ -152,7 +152,7 @@
   width: 100%;
   height: 100%;
   background-color: var(--color-hover-fill, #002e6b);
-  z-index: -1;
+  z-index: 1;
   transform: scaleX(0);
   transform-origin: left;
   transition: transform var(--transition-slow);

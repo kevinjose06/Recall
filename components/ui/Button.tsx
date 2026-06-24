@@ -161,13 +161,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <Spinner size={size === "sm" ? 14 : size === "md" ? 16 : 18} />
+          <span style={{ position: "relative", zIndex: 2, display: "inline-flex", alignItems: "center" }}>
+            <Spinner size={size === "sm" ? 14 : size === "md" ? 16 : 18} />
+          </span>
         ) : (
-          leftIcon && <span style={{ color: "inherit", display: "inline-flex", alignItems: "center" }}>{leftIcon}</span>
+          leftIcon && (
+            <span style={{ color: "inherit", display: "inline-flex", alignItems: "center", position: "relative", zIndex: 2 }}>
+              {leftIcon}
+            </span>
+          )
         )}
         <span style={{ position: "relative", zIndex: 2, color: "inherit" }}>{children}</span>
         {!isLoading && rightIcon && (
-          <span style={{ color: "inherit", display: "inline-flex", alignItems: "center" }}>{rightIcon}</span>
+          <span style={{ color: "inherit", display: "inline-flex", alignItems: "center", position: "relative", zIndex: 2 }}>
+            {rightIcon}
+          </span>
         )}
       </button>
     );

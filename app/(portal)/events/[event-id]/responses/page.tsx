@@ -53,7 +53,7 @@ export default async function ResponsesPage({ params }: PageProps) {
       <div style={{ marginBottom: "24px" }}>
         <Link href={`/events/${eventId}`} style={{ textDecoration: "none" }}>
           <Button
-            variant="secondary"
+            variant="secondary-light"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-sm">arrow_back</span>}
           >
@@ -148,7 +148,7 @@ export default async function ResponsesPage({ params }: PageProps) {
               return (
                 <section
                   key={question.id}
-                  className={`${styles.questionCard} ${styles.singleChoiceCard}`}
+                  className={`${styles.questionCard} col-span-12 lg:col-span-6`}
                   style={accentStyle(colorHex)}
                 >
                   <header className={styles.questionHeader}>
@@ -248,7 +248,7 @@ export default async function ResponsesPage({ params }: PageProps) {
               return (
                 <section
                   key={question.id}
-                  className={`${styles.questionCard} ${styles.multipleChoiceCard}`}
+                  className={`${styles.questionCard} col-span-12 lg:col-span-6`}
                   style={accentStyle(colorHex)}
                 >
                   <header className={styles.questionHeader}>
@@ -320,7 +320,7 @@ export default async function ResponsesPage({ params }: PageProps) {
               return (
                 <section
                   key={question.id}
-                  className={`${styles.questionCard} ${styles.ratingCard}`}
+                  className={`${styles.questionCard} col-span-12 lg:col-span-6`}
                   style={accentStyle(colorHex)}
                 >
                   <header className={styles.questionHeader}>
@@ -383,7 +383,7 @@ export default async function ResponsesPage({ params }: PageProps) {
             return (
               <section
                 key={question.id}
-                className={`${styles.questionCard} ${styles.shortTextCard}`}
+                className={`${styles.questionCard} col-span-12`}
                 style={accentStyle(colorHex)}
               >
                 <header className={styles.questionHeader}>
@@ -397,7 +397,7 @@ export default async function ResponsesPage({ params }: PageProps) {
                   </h2>
                 </header>
 
-                <div className={styles.textList}>
+                <div className={styles.textList} style={{ maxHeight: "250px", overflowY: "auto" }}>
                   {textResponses.map((tr, trIdx) => (
                     <div
                       key={trIdx}

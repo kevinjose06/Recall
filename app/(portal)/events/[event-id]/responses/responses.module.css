@@ -74,16 +74,15 @@
 
 .shortTextCard {
   grid-column: 1 / -1;
-  min-height: 340px;
 }
 
 @media (min-width: 1024px) {
   .singleChoiceCard {
-    grid-column: span 4;
+    grid-column: span 6;
   }
 
   .multipleChoiceCard {
-    grid-column: span 8;
+    grid-column: span 6;
   }
 
   .ratingCard {
@@ -337,6 +336,7 @@
   flex: 1;
   flex-direction: column;
   gap: 10px;
+  max-height: 280px;
   overflow-y: auto;
   padding-right: 4px;
 }

@@ -7,7 +7,7 @@ export default function ResponsesLoading() {
       {/* Header Context Skeleton */}
       <div style={{ marginBottom: "24px" }}>
         <Button
-          variant="secondary"
+          variant="secondary-light"
           size="sm"
           leftIcon={<span className="material-symbols-outlined text-sm">arrow_back</span>}
           disabled
@@ -32,7 +32,7 @@ export default function ResponsesLoading() {
       {/* Per-question analytics bento grid skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Single Choice Donut Skeleton */}
-        <section className="skeleton-glass-panel p-6 lg:col-span-5 flex flex-col gap-6 relative group overflow-hidden">
+        <section className="skeleton-glass-panel p-6 col-span-12 lg:col-span-6 flex flex-col gap-6 relative group overflow-hidden">
           <header>
             <div className="skeleton" style={{ width: "120px", height: "16px", borderRadius: "var(--radius-sm)", marginBottom: "8px" }} />
             <div className="skeleton" style={{ width: "80%", height: "24px", borderRadius: "var(--radius-md)" }} />
@@ -49,9 +49,9 @@ export default function ResponsesLoading() {
             </div>
           </div>
         </section>
-
+ 
         {/* Multiple Choice Bar Skeleton */}
-        <section className="skeleton-glass-panel p-6 lg:col-span-7 flex flex-col gap-6 relative group overflow-hidden">
+        <section className="skeleton-glass-panel p-6 col-span-12 lg:col-span-6 flex flex-col gap-6 relative group overflow-hidden">
           <header>
             <div className="skeleton" style={{ width: "140px", height: "16px", borderRadius: "var(--radius-sm)", marginBottom: "8px" }} />
             <div className="skeleton" style={{ width: "80%", height: "24px", borderRadius: "var(--radius-md)" }} />
