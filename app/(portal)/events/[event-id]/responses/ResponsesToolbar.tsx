@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/Button";
 import type { Question } from "@/lib/types";
 import styles from "./responses.module.css";
 
+import Link from "next/link";
+
 type ViewMode = "summary" | "question" | "individual";
 
 interface ResponsesToolbarProps {
   eventId: string;
+  eventTitle: string;
   mode: ViewMode;
   questions: Question[];
   responseOptions: { id: string; label: string }[];
@@ -18,29 +21,106 @@ interface ResponsesToolbarProps {
   selectedResponseId: string;
 }
 
-function ToolbarSelect({
-  label,
-  className = "",
-  children,
-  ...props
-}: React.SelectHTMLAttributes<HTMLSelectElement> & {
+interface DropdownOption {
+  value: string;
   label: string;
-}) {
+}
+
+interface CustomDropdownProps {
+  label: string;
+  value: string;
+  options: DropdownOption[];
+  onChange: (value: string) => void;
+  variant?: "primary" | "secondary";
+  disabled?: boolean;
+  align?: "left" | "right";
+}
+
+function CustomDropdown({
+  label,
+  value,
+  options,
+  onChange,
+  variant = "secondary",
+  disabled = false,
+  align = "left",
+}: CustomDropdownProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+
+  const containerClass = variant === "primary"
+    ? `${styles.dropdownContainer} ${styles.primaryDropdownContainer}`
+    : styles.dropdownContainer;
+
+  const triggerClass = variant === "primary"
+    ? `${styles.dropdownTrigger} ${styles.primaryDropdownTrigger}`
+    : styles.dropdownTrigger;
+
+  const menuClass = align === "right"
+    ? `${styles.dropdownMenu} ${styles.dropdownMenuRight}`
+    : styles.dropdownMenu;
+
   return (
-    <label className={`${styles.toolbarSelectLabel} ${className}`}>
-      <span className="sr-only">{label}</span>
-      <select className={styles.toolbarSelect} aria-label={label} {...props}>
-        {children}
-      </select>
-      <span className="material-symbols-outlined" aria-hidden="true">
-        expand_more
-      </span>
-    </label>
+    <div className={containerClass} ref={dropdownRef}>
+      <button
+        type="button"
+        className={triggerClass}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-label={label}
+      >
+        <span className={styles.dropdownValueText}>{selectedOption?.label || ""}</span>
+        <span className={`${styles.dropdownArrow} material-symbols-outlined ${isOpen ? styles.dropdownArrowRotate : ""}`}>
+          expand_more
+        </span>
+      </button>
+
+      {isOpen && !disabled && (
+        <div className={menuClass} role="listbox">
+          {options.map((opt) => {
+            const isActive = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                className={`${styles.dropdownItem} ${isActive ? styles.dropdownItemActive : ""}`}
+                role="option"
+                aria-selected={isActive}
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+              >
+                <span>{opt.label}</span>
+                {isActive && (
+                  <span className="material-symbols-outlined text-[16px]">check</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
 export function ResponsesToolbar({
   eventId,
+  eventTitle,
   mode,
   questions,
   responseOptions,
@@ -124,55 +204,57 @@ export function ResponsesToolbar({
   }
 
   return (
-    <div className={styles.toolbar}>
-      <div className={styles.toolbarFields}>
-        <ToolbarSelect
-          label="View mode"
-          id="responses-view-mode"
-          value={mode}
-          onChange={(event) =>
-            updateViewParams({ mode: event.target.value as ViewMode })
-          }
+    <div className={styles.toolbarContainer}>
+      <Link href={`/events/${eventId}`} className={styles.backLink}>
+        <Button
+          type="button"
+          variant="secondary-light"
+          size="sm"
+          leftIcon={<span className="material-symbols-outlined text-sm">arrow_back</span>}
         >
-          <option value="summary">Summary</option>
-          <option value="question">Question</option>
-          <option value="individual">Individual</option>
-        </ToolbarSelect>
+          {eventTitle}
+        </Button>
+      </Link>
+
+      <div className={styles.toolbarFields}>
+        <CustomDropdown
+          label="View mode"
+          variant="primary"
+          value={mode}
+          options={[
+            { value: "summary", label: "Summary" },
+            { value: "question", label: "Question" },
+            { value: "individual", label: "Individual" },
+          ]}
+          onChange={(val) => updateViewParams({ mode: val as ViewMode })}
+        />
 
         {mode === "question" && (
-          <ToolbarSelect
+          <CustomDropdown
             label="Question"
-            id="responses-question"
             value={selectedQuestionId}
-            onChange={(event) =>
-              updateViewParams({ mode: "question", questionId: event.target.value })
-            }
+            options={questions.map((question, index) => ({
+              value: question.id,
+              label: `Q${index + 1}: ${question.question_text}`,
+            }))}
+            onChange={(val) => updateViewParams({ mode: "question", questionId: val })}
             disabled={questions.length === 0}
-          >
-            {questions.map((question, index) => (
-              <option key={question.id} value={question.id}>
-                {`Q${index + 1}: ${question.question_text}`}
-              </option>
-            ))}
-          </ToolbarSelect>
+            align="right"
+          />
         )}
 
         {mode === "individual" && (
-          <ToolbarSelect
+          <CustomDropdown
             label="Respondent"
-            id="responses-respondent"
             value={selectedResponseId}
-            onChange={(event) =>
-              updateViewParams({ mode: "individual", responseId: event.target.value })
-            }
+            options={responseOptions.map((response) => ({
+              value: response.id,
+              label: response.label,
+            }))}
+            onChange={(val) => updateViewParams({ mode: "individual", responseId: val })}
             disabled={responseOptions.length === 0}
-          >
-            {responseOptions.map((response) => (
-              <option key={response.id} value={response.id}>
-                {response.label}
-              </option>
-            ))}
-          </ToolbarSelect>
+            align="right"
+          />
         )}
       </div>
 

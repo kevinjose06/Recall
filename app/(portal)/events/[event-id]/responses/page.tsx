@@ -5,7 +5,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventAdmin, getQuestionsAdmin, getResponsesAndAnswersAdmin } from "@/lib/db-admin";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import type { AnswerValue, Question, Response } from "@/lib/types";
 import { ResponsesToolbar } from "./ResponsesToolbar";
 import styles from "./responses.module.css";
@@ -270,26 +269,15 @@ export default async function ResponsesPage({ params, searchParams }: PageProps)
 
   return (
     <div className="page-container animate-fade-slide-up">
-      <div className={styles.pageActions}>
-        <Link href={`/events/${eventId}`} style={{ textDecoration: "none" }}>
-          <Button
-            variant="secondary-light"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-sm">arrow_back</span>}
-          >
-            {event.title}
-          </Button>
-        </Link>
-
-        <ResponsesToolbar
-          eventId={eventId}
-          mode={mode}
-          questions={questions}
-          responseOptions={responseOptions}
-          selectedQuestionId={selectedQuestionId}
-          selectedResponseId={selectedResponseId}
-        />
-      </div>
+      <ResponsesToolbar
+        eventId={eventId}
+        eventTitle={event.title}
+        mode={mode}
+        questions={questions}
+        responseOptions={responseOptions}
+        selectedQuestionId={selectedQuestionId}
+        selectedResponseId={selectedResponseId}
+      />
       
       <Card padding="lg" style={{ marginBottom: "24px" }}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
