@@ -166,7 +166,7 @@ export default function LoginPage() {
                   textDecoration: "none",
                 }}
               >
-                Change password
+                Reset password
               </a>
             </div>
           </form>

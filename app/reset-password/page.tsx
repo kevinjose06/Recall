@@ -2,9 +2,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { reAuthAndChangePassword } from "@/lib/auth";
+import { sendPasswordReset } from "@/lib/auth";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 
 function BackIcon() {
@@ -15,102 +14,82 @@ function BackIcon() {
   );
 }
 
+function EmailIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  );
+}
+
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const [currentPassword, setCurrentPassword] = React.useState("");
-  const [newPassword, setNewPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
   const [error, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const targetEmail = "csa@rit.ac.in";
+
+  async function handleSendResetEmail(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setSuccess("");
-
-    if (newPassword !== confirmPassword) {
-      setError("New passwords do not match.");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setError("New password must be at least 6 characters.");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      await reAuthAndChangePassword(currentPassword, newPassword);
-      setSuccess("Password successfully changed! Distribute the new password to members via college email.");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      await sendPasswordReset(targetEmail);
+      setSuccess(`A password reset link has been sent to ${targetEmail}. Please check the inbox and follow the instructions to set your new password.`);
     } catch (err: any) {
       console.error(err);
-      if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password") {
-        setError("Current password is incorrect.");
-      } else {
-        setError("Failed to change password. Make sure you are logged in.");
-      }
+      setError(err.message || "Failed to send password reset email. Please try again later.");
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <div className="page-container--narrow" style={{ paddingTop: "0px" }}>
+    <div className="page-container--narrow" style={{ paddingTop: "24px" }}>
       <Button
         type="button"
         variant="primary"
         size="sm"
         onClick={() => router.back()}
         leftIcon={<BackIcon />}
-        style={{ marginBottom: "12px" }}
+        style={{ marginBottom: "20px" }}
       >
         Back
       </Button>
 
       <div style={{ marginBottom: "24px" }}>
-        <h1 style={{ fontSize: "1.5rem", marginBottom: "8px", color: "var(--color-text-primary)", letterSpacing: "-0.02em" }}>
-          Change Association Password
+        <h1 style={{ fontSize: "1.75rem", fontWeight: 700, marginBottom: "8px", color: "var(--color-text-primary)", letterSpacing: "-0.02em" }}>
+          Reset Password
         </h1>
-        <p style={{ color: "var(--color-text-secondary)", fontSize: "0.875rem" }}>
-          This will change the shared password for the `csa@ritkerala.ac.in` account. You must enter the current password to authorize this change.
-        </p>
       </div>
 
       <Card>
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          <Input
-            label="Current password"
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            required
-            disabled={isLoading || !!success}
-          />
-
-          <div style={{ height: "1px", background: "var(--color-outline)", opacity: 0.2, margin: "8px 0" }} />
-
-          <Input
-            label="New password"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-            disabled={isLoading || !!success}
-          />
-
-          <Input
-            label="Confirm new password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            disabled={isLoading || !!success}
-          />
+        <form onSubmit={handleSendResetEmail} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "12px", 
+            padding: "14px", 
+            borderRadius: "var(--radius-lg)", 
+            backgroundColor: "rgba(255, 255, 255, 0.03)", 
+            border: "1px solid rgba(255, 255, 255, 0.08)" 
+          }}>
+            <div style={{ color: "var(--color-outline)", display: "flex" }}>
+              <EmailIcon />
+            </div>
+            <div>
+              <div style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Target Account
+              </div>
+              <div style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-text-primary)" }}>
+                {targetEmail}
+              </div>
+            </div>
+          </div>
 
           {error && (
             <div
@@ -122,6 +101,7 @@ export default function ResetPasswordPage() {
                 border: "1px solid var(--color-error-border)",
                 color: "var(--color-error)",
                 fontSize: "0.875rem",
+                lineHeight: "1.5",
               }}
             >
               {error}
@@ -132,27 +112,27 @@ export default function ResetPasswordPage() {
             <div
               role="alert"
               style={{
-                padding: "10px 14px",
+                padding: "12px 16px",
                 borderRadius: "var(--radius-md)",
-                backgroundColor: "rgba(0, 200, 83, 0.1)",
-                border: "1px solid rgba(0, 200, 83, 0.3)",
+                backgroundColor: "rgba(0, 200, 83, 0.08)",
+                border: "1px solid rgba(0, 200, 83, 0.2)",
                 color: "#00e676",
                 fontSize: "0.875rem",
+                lineHeight: "1.6",
               }}
             >
               {success}
             </div>
           )}
 
-          <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", paddingTop: "4px" }}>
-            {!success && (
-              <Button type="submit" isLoading={isLoading}>
-                Change password
+          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", alignItems: "center" }}>
+            {!success ? (
+              <Button type="submit" isLoading={isLoading} style={{ width: "100%" }}>
+                Send Password Reset Email
               </Button>
-            )}
-            {success && (
-              <Button type="button" onClick={() => router.push("/dashboard")}>
-                Return to dashboard
+            ) : (
+              <Button type="button" onClick={() => router.push("/login")} style={{ width: "100%" }}>
+                Back to Sign In
               </Button>
             )}
           </div>
