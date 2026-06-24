@@ -131,6 +131,14 @@ export function ParticipantForm({
     }
   }
 
+  function clearForm() {
+    if (confirm("Are you sure you want to clear all your answers?")) {
+      setAnswers({});
+      setValidationErrors({});
+      setSubmitError("");
+    }
+  }
+
   function validate(): boolean {
     const errors: Record<string, string> = {};
     let valid = true;
@@ -260,7 +268,7 @@ export function ParticipantForm({
 
   // ── Form ───────────────────────────────────────────────────
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-10 w-full items-center">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6 w-full items-center">
       <style>{`
         /* Mobile and Desktop responsive overrides */
         @media (max-width: 767px) {
@@ -283,7 +291,7 @@ export function ParticipantForm({
           }
         }
       `}</style>
-      <div className="flex flex-col gap-10 w-full items-center">
+      <div className="flex flex-col gap-6 w-full items-center">
         {questions.map((question, idx) => {
           const hasError = !!validationErrors[question.id];
           const delayStyle = { animationDelay: `${(idx + 2) * 0.1}s` };
@@ -392,11 +400,11 @@ export function ParticipantForm({
                               onChange={() => toggleMultiAnswer(question.id, option)}
                               className="sr-only"
                             />
-                            <div className={`w-6 h-6 border bg-transparent shrink-0 transition-all duration-150 rounded-[4px] flex items-center justify-center ${
-                              isChecked ? "bg-[var(--color-primary)] border-[var(--color-primary)]" : "border-white/30 group-hover:border-white/50"
+                            <div className={`w-6 h-6 border shrink-0 transition-all duration-150 rounded-[4px] flex items-center justify-center bg-transparent ${
+                              isChecked ? "border-[var(--color-primary)]" : "border-white/30 group-hover:border-white/50"
                             }`}>
                               {isChecked && (
-                                <span className="material-symbols-outlined text-[16px] text-[#001a43] font-bold">check</span>
+                                <span className="material-symbols-outlined text-[16px] text-[var(--color-primary)] font-bold">check</span>
                               )}
                             </div>
                             <div className={`flex-grow bg-transparent border-b border-transparent py-[10px] px-[14px] min-h-[48px] text-base transition-all duration-150 flex items-center ${
@@ -486,17 +494,29 @@ export function ParticipantForm({
       )}
 
       {/* Submit bar */}
-      <div className="mt-4 stagger-in max-w-3xl mx-auto w-full flex justify-center" style={{ animationDelay: `${(questions.length + 2) * 0.1}s` }}>
+      <div className="mt-2 stagger-in max-w-3xl mx-auto w-[calc(100%-32px)] md:w-full flex justify-between items-center gap-4 mb-6" style={{ animationDelay: `${(questions.length + 2) * 0.1}s` }}>
+        <Button
+          type="button"
+          onClick={clearForm}
+          variant="primary"
+          size="md"
+          className="max-w-[140px]"
+        >
+          Clear form
+        </Button>
         <Button
           type="submit"
           variant="secondary-light"
           size="md"
           isLoading={formState === "submitting"}
-          className="w-full max-w-[320px] tracking-wider"
+          className="w-full max-w-[200px] md:max-w-[320px] tracking-wider"
         >
           {formState === "submitting" ? "Submitting…" : "Submit feedback"}
         </Button>
       </div>
+
+      {/* Dedicated vacant space below the buttons */}
+      <div className="h-32 w-full shrink-0" aria-hidden="true" />
     </form>
   );
 }

@@ -104,11 +104,17 @@ export default async function RespondPage({ params }: PageProps) {
         {/* Event Info Header Card matching the Builder banner style */}
         <Card padding="lg" className="stagger-in w-[calc(100%-32px)] md:w-full mx-auto" style={{ animationDelay: "0.1s", marginBottom: "24px" }}>
           <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-on-surface)", marginBottom: "8px", lineHeight: 1.25 }}>
-            {event.title}
+            {event.title} - Feedback form
           </h1>
           <p className="text-[var(--color-text-secondary)] text-sm font-medium mt-2">
             {formatEventDates(event.start_date, event.end_date)}
           </p>
+          <p className="text-[var(--color-text-secondary)] text-sm font-medium mt-2">
+            Thank you for participating in {event.title}. We&apos;d love to hear your feedback!
+          </p>
+          <div className="mt-4 pt-4 border-t border-white/10 text-sm text-[var(--color-error)] font-medium">
+            * Indicates required question
+          </div>
         </Card>
 
         {/* No questions */}

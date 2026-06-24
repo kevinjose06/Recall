@@ -7,7 +7,7 @@ export default function EventDetailLoading() {
       {/* Back nav skeleton */}
       <div style={{ marginBottom: "24px" }}>
         <Button
-          variant="secondary"
+          variant="secondary-light"
           size="sm"
           leftIcon={<span className="material-symbols-outlined text-sm">arrow_back</span>}
           disabled

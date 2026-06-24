@@ -67,7 +67,7 @@ export default async function EventDetailPage({ params }: PageProps) {
       <div style={{ marginBottom: "24px" }}>
         <Link href="/dashboard" style={{ textDecoration: "none" }}>
           <Button
-            variant="secondary"
+            variant="secondary-light"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-sm">arrow_back</span>}
           >
