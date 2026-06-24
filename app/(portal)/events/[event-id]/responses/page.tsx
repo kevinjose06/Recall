@@ -6,11 +6,21 @@ import { notFound } from "next/navigation";
 import { getEventAdmin, getQuestionsAdmin, getResponsesAndAnswersAdmin } from "@/lib/db-admin";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import type { AnswerValue, Question, Response } from "@/lib/types";
+import { ResponsesToolbar } from "./ResponsesToolbar";
 import styles from "./responses.module.css";
 
 interface PageProps {
   params: Promise<{ "event-id": string }>;
+  searchParams?: Promise<{
+    view?: string;
+    question?: string;
+    response?: string;
+  }>;
 }
+
+type ViewMode = "summary" | "question" | "individual";
+type JoinedAnswer = Awaited<ReturnType<typeof getResponsesAndAnswersAdmin>>["answers"][number];
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { "event-id": eventId } = await params;
@@ -20,6 +30,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -32,8 +43,199 @@ function accentStyle(color: string): CSSProperties & { "--accent-color": string 
   return { "--accent-color": color };
 }
 
-export default async function ResponsesPage({ params }: PageProps) {
+function getViewMode(value?: string): ViewMode {
+  if (value === "question" || value === "individual") return value;
+  return "summary";
+}
+
+function getQuestionTypeLabel(type: Question["question_type"]) {
+  switch (type) {
+    case "single_choice":
+      return "Single Choice";
+    case "mcq":
+      return "Multiple Choice";
+    case "star_rating":
+      return "Star Rating";
+    case "short_text":
+      return "Short Text";
+  }
+}
+
+function formatAnswerValue(value: AnswerValue | undefined, questionType?: Question["question_type"]) {
+  if (value === undefined) return "No answer";
+  if (Array.isArray(value)) return value.length > 0 ? value.join(", ") : "No answer";
+  if (questionType === "star_rating") return `${value} / 5`;
+  return String(value).trim() || "No answer";
+}
+
+function getAnswerMap(answers: JoinedAnswer[]) {
+  const answerMap = new Map<string, JoinedAnswer>();
+
+  answers.forEach((answer) => {
+    answerMap.set(`${answer.response_id}:${answer.question_id}`, answer);
+  });
+
+  return answerMap;
+}
+
+function isNameQuestion(question: Question) {
+  return /\b(full\s*)?name\b/i.test(question.question_text);
+}
+
+function getRespondentLabel(
+  response: Response,
+  responses: Response[],
+  questions: Question[] = [],
+  answers: JoinedAnswer[] = []
+) {
+  const storedName = response.respondent_name ?? response.name;
+
+  if (storedName?.trim()) {
+    return storedName.trim();
+  }
+
+  const answerMap = getAnswerMap(answers);
+  const nameQuestion = questions.find(isNameQuestion);
+  const nameAnswer = nameQuestion
+    ? answerMap.get(`${response.id}:${nameQuestion.id}`)?.answer_value
+    : undefined;
+
+  if (typeof nameAnswer === "string" && nameAnswer.trim()) {
+    return nameAnswer.trim();
+  }
+
+  const index = responses.findIndex((item) => item.id === response.id);
+  return `Anonymous ${index >= 0 ? index + 1 : ""}`.trim();
+}
+
+function QuestionResponseView({
+  question,
+  questionIndex,
+  questions,
+  responses,
+  answers,
+}: {
+  question: Question | undefined;
+  questionIndex: number;
+  questions: Question[];
+  responses: Response[];
+  answers: JoinedAnswer[];
+}) {
+  if (!question) {
+    return (
+      <div className={styles.messageCard}>
+        No question selected.
+      </div>
+    );
+  }
+
+  if (responses.length === 0) {
+    return (
+      <div className={styles.messageCard}>
+        No responses yet. Share the participant link to collect feedback.
+      </div>
+    );
+  }
+
+  const answerMap = getAnswerMap(answers);
+
+  return (
+    <section className={styles.detailPanel} style={accentStyle("#aec6ff")}>
+      <header className={styles.questionHeader}>
+        <div className={styles.questionMetaRow}>
+          <span className={styles.questionMeta}>
+            Q{questionIndex + 1} - {getQuestionTypeLabel(question.question_type)}
+          </span>
+        </div>
+        <h2 className={styles.questionTitle}>{question.question_text}</h2>
+      </header>
+
+      <div className={styles.answerList}>
+        {responses.map((response) => {
+          const answer = answerMap.get(`${response.id}:${question.id}`);
+
+          return (
+            <article key={response.id} className={styles.answerItem}>
+              <div className={styles.answerHeader}>
+                <span className={styles.answerRespondent}>
+                  {getRespondentLabel(response, responses, questions, answers)}
+                </span>
+                <span className={styles.answerTime}>
+                  {formatDateTime(response.submitted_at)}
+                </span>
+              </div>
+              <p className={styles.answerValue}>
+                {formatAnswerValue(answer?.answer_value, question.question_type)}
+              </p>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function IndividualResponseView({
+  response,
+  responses,
+  questions,
+  answers,
+}: {
+  response: Response | undefined;
+  responses: Response[];
+  questions: Question[];
+  answers: JoinedAnswer[];
+}) {
+  if (!response) {
+    return (
+      <div className={styles.messageCard}>
+        No respondent selected.
+      </div>
+    );
+  }
+
+  const answerMap = getAnswerMap(answers);
+
+  return (
+    <section className={styles.detailPanel} style={accentStyle("#4edea3")}>
+      <header className={styles.questionHeader}>
+        <div className={styles.questionMetaRow}>
+          <span className={styles.questionMeta}>
+            {getRespondentLabel(response, responses, questions, answers)}
+          </span>
+          <span className={styles.questionHint}>
+            Submitted {formatDateTime(response.submitted_at)}
+          </span>
+        </div>
+        <h2 className={styles.questionTitle}>Submitted answers</h2>
+      </header>
+
+      <div className={styles.answerList}>
+        {questions.map((question, index) => {
+          const answer = answerMap.get(`${response.id}:${question.id}`);
+
+          return (
+            <article key={question.id} className={styles.answerItem}>
+              <div className={styles.answerHeader}>
+                <span className={styles.answerRespondent}>
+                  Q{index + 1} - {getQuestionTypeLabel(question.question_type)}
+                </span>
+              </div>
+              <p className={styles.answerQuestion}>{question.question_text}</p>
+              <p className={styles.answerValue}>
+                {formatAnswerValue(answer?.answer_value, question.question_type)}
+              </p>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+export default async function ResponsesPage({ params, searchParams }: PageProps) {
   const { "event-id": eventId } = await params;
+  const resolvedSearchParams = await searchParams;
 
   const [event, questions, responsesAndAnswers] = await Promise.all([
     getEventAdmin(eventId),
@@ -46,11 +248,29 @@ export default async function ResponsesPage({ params }: PageProps) {
   const { responses, answers } = responsesAndAnswers;
 
   const responseCount = responses.length;
+  const mode = getViewMode(resolvedSearchParams?.view);
+  const selectedQuestionId =
+    questions.find((question) => question.id === resolvedSearchParams?.question)?.id ??
+    questions[0]?.id ??
+    "";
+  const selectedResponseId =
+    responses.find((response) => response.id === resolvedSearchParams?.response)?.id ??
+    responses[0]?.id ??
+    "";
+  const selectedQuestion = questions.find((question) => question.id === selectedQuestionId);
+  const selectedQuestionIndex = Math.max(
+    0,
+    questions.findIndex((question) => question.id === selectedQuestionId)
+  );
+  const selectedResponse = responses.find((response) => response.id === selectedResponseId);
+  const responseOptions = responses.map((response) => ({
+    id: response.id,
+    label: getRespondentLabel(response, responses, questions, answers),
+  }));
 
   return (
     <div className="page-container animate-fade-slide-up">
-      {/* Header Context */}
-      <div style={{ marginBottom: "24px" }}>
+      <div className={styles.pageActions}>
         <Link href={`/events/${eventId}`} style={{ textDecoration: "none" }}>
           <Button
             variant="secondary-light"
@@ -60,6 +280,15 @@ export default async function ResponsesPage({ params }: PageProps) {
             {event.title}
           </Button>
         </Link>
+
+        <ResponsesToolbar
+          eventId={eventId}
+          mode={mode}
+          questions={questions}
+          responseOptions={responseOptions}
+          selectedQuestionId={selectedQuestionId}
+          selectedResponseId={selectedResponseId}
+        />
       </div>
       
       <Card padding="lg" style={{ marginBottom: "24px" }}>
@@ -83,8 +312,9 @@ export default async function ResponsesPage({ params }: PageProps) {
         </div>
       </Card>
 
-      {/* Per-question analytics bento grid */}
-      <div className={styles.analyticsGrid}>
+      {mode === "summary" && (
+        /* Per-question analytics bento grid */
+        <div className={styles.analyticsGrid}>
         {(!questions || questions.length === 0) && (
           <div className={styles.messageCard}>
             No questions configured yet.{" "}
@@ -422,7 +652,27 @@ export default async function ResponsesPage({ params }: PageProps) {
             );
           })
         )}
-      </div>
+        </div>
+      )}
+
+      {mode === "question" && (
+        <QuestionResponseView
+          question={selectedQuestion}
+          questionIndex={selectedQuestionIndex}
+          questions={questions}
+          responses={responses}
+          answers={answers}
+        />
+      )}
+
+      {mode === "individual" && (
+        <IndividualResponseView
+          response={selectedResponse}
+          responses={responses}
+          questions={questions}
+          answers={answers}
+        />
+      )}
 
     </div>
   );

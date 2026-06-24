@@ -4,9 +4,239 @@
   gap: 20px;
 }
 
+.pageActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.toolbar {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.toolbarFields {
+  display: flex;
+  min-width: 0;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.toolbarActions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.toolbarSelectLabel {
+  position: relative;
+  display: inline-flex;
+  min-width: 148px;
+  max-width: min(360px, 38vw);
+  height: 32px;
+  flex: 0 1 auto;
+  align-items: center;
+}
+
+.toolbarSelectLabel :global(.material-symbols-outlined) {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  color: #001a43;
+  font-size: 19px;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.toolbarSelect {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  appearance: none;
+  overflow: hidden;
+  border: 1px solid #7ba4ff;
+  border-radius: var(--radius-full);
+  background: #7ba4ff;
+  color: #001a43;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  outline: none;
+  padding: 0 36px 0 16px;
+  text-overflow: ellipsis;
+  transition:
+    background-color var(--transition-base),
+    border-color var(--transition-base),
+    color var(--transition-base),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+  white-space: nowrap;
+}
+
+.toolbarSelect:hover:not(:disabled) {
+  border-color: #002e6b;
+  background: #002e6b;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.toolbarSelect:hover:not(:disabled) + :global(.material-symbols-outlined) {
+  color: #ffffff;
+}
+
+.toolbarSelect:focus-visible {
+  box-shadow: 0 0 0 2px rgba(174, 198, 255, 0.45);
+}
+
+.toolbarSelect:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.exportStatusLink,
+.exportStatusError {
+  font-size: 0.8125rem;
+  line-height: 1.3;
+}
+
+.exportStatusLink {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.exportStatusError {
+  max-width: 320px;
+  color: var(--color-error);
+}
+
+.detailPanel {
+  --accent-color: var(--color-primary);
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgba(20, 20, 22, 0.98), rgba(12, 12, 13, 0.96)),
+    rgba(13, 13, 13, 0.96);
+  box-shadow: var(--shadow-md);
+  padding: 18px 18px 18px 22px;
+}
+
+.detailPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--accent-color);
+  opacity: 0.75;
+}
+
+.answerList {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.answerItem {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px 14px;
+}
+
+.answerHeader {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+}
+
+.answerRespondent,
+.answerTime {
+  color: var(--color-text-secondary);
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.answerRespondent {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.answerTime {
+  opacity: 0.72;
+}
+
+.answerQuestion {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.answerValue {
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
 @media (min-width: 1024px) {
   .analyticsGrid {
     grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  .pageActions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .toolbar {
+    width: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .toolbarFields {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .toolbarActions {
+    justify-content: flex-start;
+  }
+
+  .toolbarSelectLabel {
+    max-width: min(100%, 360px);
   }
 }
 

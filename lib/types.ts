@@ -37,6 +37,8 @@ export interface Response {
   id: string; // auto-generated
   event_id: string;
   respondent_token: string;
+  respondent_name?: string;
+  name?: string;
   questionnaire_signature?: string;
   submitted_at: string;
 }
@@ -53,6 +55,7 @@ export interface Answer {
 export interface SubmitResponsePayload {
   event_id: string;
   respondent_token: string;
+  respondent_name?: string;
   questionnaire_signature: string;
   answers: {
     question_id: string;

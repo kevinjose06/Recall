@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const { event_id, respondent_token, questionnaire_signature, answers } = body;
+  const { event_id, respondent_token, respondent_name, questionnaire_signature, answers } = body;
 
   if (!event_id || typeof event_id !== "string") {
     return NextResponse.json({ error: "Missing or invalid event_id." }, { status: 400 });
@@ -93,6 +93,9 @@ export async function POST(request: NextRequest) {
     batch.set(newResponseRef, {
       event_id,
       respondent_token,
+      ...(typeof respondent_name === "string" && respondent_name.trim()
+        ? { respondent_name: respondent_name.trim() }
+        : {}),
       questionnaire_signature,
       submitted_at: new Date().toISOString(),
     });
