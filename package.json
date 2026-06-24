@@ -16,7 +16,7 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.107.0",
     "firebase": "^12.14.0",
-    "firebase-admin": "^14.0.0",
+    "firebase-admin": "^11.11.1",
     "next": "16.2.7",
     "postprocessing": "^6.39.1",
     "react": "19.2.4",
