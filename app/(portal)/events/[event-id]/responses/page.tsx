@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventAdmin, getQuestionsAdmin, getResponsesAndAnswersAdmin } from "@/lib/db-admin";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import type { AnswerValue, Question, Response } from "@/lib/types";
 import { ResponsesToolbar } from "./ResponsesToolbar";
 import styles from "./responses.module.css";
@@ -113,12 +114,16 @@ function QuestionResponseView({
   questions,
   responses,
   answers,
+  prevUrl,
+  nextUrl,
 }: {
   question: Question | undefined;
   questionIndex: number;
   questions: Question[];
   responses: Response[];
   answers: JoinedAnswer[];
+  prevUrl: string | null;
+  nextUrl: string | null;
 }) {
   if (!question) {
     return (
@@ -141,10 +146,28 @@ function QuestionResponseView({
   return (
     <section className={styles.detailPanel} style={accentStyle("#aec6ff")}>
       <header className={styles.questionHeader}>
-        <div className={styles.questionMetaRow}>
-          <span className={styles.questionMeta}>
-            Q{questionIndex + 1} - {getQuestionTypeLabel(question.question_type)}
-          </span>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", width: "100%", marginBottom: "4px" }}>
+          <div className={styles.questionMetaRow}>
+            <span className={styles.questionMeta}>
+              Q{questionIndex + 1} - {getQuestionTypeLabel(question.question_type)}
+            </span>
+          </div>
+          <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+            {prevUrl ? (
+              <Link href={prevUrl} tabIndex={-1}>
+                <Button type="button" variant="ghost" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">chevron_left</span>}>Prev</Button>
+              </Link>
+            ) : (
+              <Button type="button" variant="ghost" size="sm" disabled leftIcon={<span className="material-symbols-outlined text-[18px]">chevron_left</span>}>Prev</Button>
+            )}
+            {nextUrl ? (
+              <Link href={nextUrl} tabIndex={-1}>
+                <Button type="button" variant="ghost" size="sm" rightIcon={<span className="material-symbols-outlined text-[18px]">chevron_right</span>}>Next</Button>
+              </Link>
+            ) : (
+              <Button type="button" variant="ghost" size="sm" disabled rightIcon={<span className="material-symbols-outlined text-[18px]">chevron_right</span>}>Next</Button>
+            )}
+          </div>
         </div>
         <h2 className={styles.questionTitle}>{question.question_text}</h2>
       </header>
@@ -179,11 +202,15 @@ function IndividualResponseView({
   responses,
   questions,
   answers,
+  prevUrl,
+  nextUrl,
 }: {
   response: Response | undefined;
   responses: Response[];
   questions: Question[];
   answers: JoinedAnswer[];
+  prevUrl: string | null;
+  nextUrl: string | null;
 }) {
   if (!response) {
     return (
@@ -198,13 +225,31 @@ function IndividualResponseView({
   return (
     <section className={styles.detailPanel} style={accentStyle("#4edea3")}>
       <header className={styles.questionHeader}>
-        <div className={styles.questionMetaRow}>
-          <span className={styles.questionMeta}>
-            {getRespondentLabel(response, responses, questions, answers)}
-          </span>
-          <span className={styles.questionHint}>
-            Submitted {formatDateTime(response.submitted_at)}
-          </span>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", width: "100%", marginBottom: "4px" }}>
+          <div className={styles.questionMetaRow}>
+            <span className={styles.questionMeta}>
+              {getRespondentLabel(response, responses, questions, answers)}
+            </span>
+            <span className={styles.questionHint}>
+              Submitted {formatDateTime(response.submitted_at)}
+            </span>
+          </div>
+          <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+            {prevUrl ? (
+              <Link href={prevUrl} tabIndex={-1}>
+                <Button type="button" variant="ghost" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">chevron_left</span>}>Prev</Button>
+              </Link>
+            ) : (
+              <Button type="button" variant="ghost" size="sm" disabled leftIcon={<span className="material-symbols-outlined text-[18px]">chevron_left</span>}>Prev</Button>
+            )}
+            {nextUrl ? (
+              <Link href={nextUrl} tabIndex={-1}>
+                <Button type="button" variant="ghost" size="sm" rightIcon={<span className="material-symbols-outlined text-[18px]">chevron_right</span>}>Next</Button>
+              </Link>
+            ) : (
+              <Button type="button" variant="ghost" size="sm" disabled rightIcon={<span className="material-symbols-outlined text-[18px]">chevron_right</span>}>Next</Button>
+            )}
+          </div>
         </div>
         <h2 className={styles.questionTitle}>Submitted answers</h2>
       </header>
@@ -262,10 +307,20 @@ export default async function ResponsesPage({ params, searchParams }: PageProps)
     questions.findIndex((question) => question.id === selectedQuestionId)
   );
   const selectedResponse = responses.find((response) => response.id === selectedResponseId);
+  const selectedResponseIndex = Math.max(
+    0,
+    responses.findIndex((response) => response.id === selectedResponseId)
+  );
   const responseOptions = responses.map((response) => ({
     id: response.id,
     label: getRespondentLabel(response, responses, questions, answers),
   }));
+
+  const prevQuestionId = selectedQuestionIndex > 0 ? questions[selectedQuestionIndex - 1]?.id : null;
+  const nextQuestionId = selectedQuestionIndex < questions.length - 1 ? questions[selectedQuestionIndex + 1]?.id : null;
+
+  const prevResponseId = selectedResponseIndex > 0 ? responses[selectedResponseIndex - 1]?.id : null;
+  const nextResponseId = selectedResponseIndex < responses.length - 1 ? responses[selectedResponseIndex + 1]?.id : null;
 
   return (
     <div className="page-container animate-fade-slide-up">
@@ -650,6 +705,8 @@ export default async function ResponsesPage({ params, searchParams }: PageProps)
           questions={questions}
           responses={responses}
           answers={answers}
+          prevUrl={prevQuestionId ? `?view=question&question=${prevQuestionId}` : null}
+          nextUrl={nextQuestionId ? `?view=question&question=${nextQuestionId}` : null}
         />
       )}
 
@@ -659,6 +716,8 @@ export default async function ResponsesPage({ params, searchParams }: PageProps)
           responses={responses}
           questions={questions}
           answers={answers}
+          prevUrl={prevResponseId ? `?view=individual&response=${prevResponseId}` : null}
+          nextUrl={nextResponseId ? `?view=individual&response=${nextResponseId}` : null}
         />
       )}
 
