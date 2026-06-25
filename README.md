@@ -14,7 +14,7 @@
 5. [Architecture & System Flows](#-architecture--system-flows)
    - [Administrative Authentication Flow](#administrative-authentication-flow)
    - [Questionnaire Integrity (Signatures)](#questionnaire-integrity-signatures)
-   - [Google Sheets Export Pipeline](#google-sheets-export-pipeline)
+   - [Excel / CSV Export Flow](#excel--csv-export-flow)
 6. [Directory Structure](#-directory-structure)
 7. [Installation & Local Setup](#-installation--local-setup)
 8. [Firebase Console & Security Rules Configuration](#-firebase-console--security-rules-configuration)
@@ -27,7 +27,7 @@
 
 The current reliance on individual-led feedback loops (primarily Google Forms) introduces three critical failure points:
 * **Access Fragmentation:** Responses are visible only to the form creator. Sharing access is manual, leading to data siloing and lost insights.
-* **Institutional Memory Loss:** When a new Executive Committee (ExaCom) takes charge, there is no permanent archive of past events, feedback, or operational issues. Every new committee starts blind.
+* **Institutional Memory Loss:** When a new Executive Committee (Excom) takes charge, there is no permanent archive of past events, feedback, or operational issues. Every new committee starts blind.
 * **Lack of Automated Analytics:** Raw spreadsheet data requires manual parsing. There is no automated, recurring visualization of ratings, option selections, or qualitative sentiment.
 
 **Recall** resolves these issues by establishing a centralized dashboard accessible to all authenticated CSA members, preserving event archives across handovers, and generating real-time analytics with exportable data options.
@@ -45,7 +45,7 @@ The current reliance on individual-led feedback loops (primarily Google Forms) i
   - **Multiple Choice (MCQ):** Visualized as Horizontal Bar Charts with multi-select labels.
   - **Star Ratings:** Averages and star distributions.
   - **Short Text:** Searchable, scrollable lists sorted by submission time.
-* **🔌 Direct Google Sheets Exporter:** A server-side API that builds and styles a Google Spreadsheet using Google's REST APIs (Sheets & Drive v3) with zero heavy external dependencies. Automatically shares the spreadsheet with the association's email.
+* **📥 Client-Side Excel/CSV Export:** Enables administrators to download event response data instantly. Generates clean, structured, and properly-escaped spreadsheet reports directly in the browser as a `.csv` file (fully compatible with Microsoft Excel and Google Sheets) containing respondent details, timestamps, and corresponding answers.
 * **🔑 Hybrid Cookie-Based Auth:** Combines client-side Firebase Auth with secure, server-side HTTP-Only session cookies verified by Next.js Middleware.
 * **🌀 Premium Visual Interface:** Built with a curated dark color palette, custom glassmorphism components, and a fluid 3D Three.js particle background (`PixelBlast`) that adds a premium feel.
 
@@ -155,28 +155,29 @@ When a questionnaire is built or updated, it has a cryptographic signature based
    - Compare the server-side signature with the payload's `questionnaire_signature`.
    - If they mismatch, return `409 Conflict` (Code: `QUESTIONNAIRE_CHANGED`), forcing the participant browser to reload.
 
-### Google Sheets Export Pipeline
+### Excel / CSV Export Flow
 
-Rather than relying on heavy Google client libraries, Recall uses a serverless endpoint (`POST /api/export-responses-to-sheets`) that constructs its own Google OAuth transactions using standard JSON web tokens (JWT):
+Recall simplifies feedback retrieval by generating and compiling data client-side with zero external cloud dependencies or API authorization overhead. When an administrator clicks the **"Save as Excel"** button:
 
 ```mermaid
-graph TD
-    A[Admin Request] --> B[Verify Admin Session Cookie]
-    B --> C[Fetch Event, Questions, Responses & Answers]
-    C --> D[Initialize Google Token Claim]
-    D --> E[Sign JWT with Service Account Private Key via RSA-SHA256]
-    E --> F[Request Access Token from Google OAuth2 Endpoint]
-    F --> G[POST to Google Sheets API: Create Spreadsheet with 4 Sheets]
-    G --> H[Batch Update Values: Write Summary, Questions, Matrix, & Responses]
-    H --> I[POST to Google Drive API: Share Spreadsheet with csa@rit.ac.in]
-    I --> J[Return Shareable Docs URL to Client]
+sequenceDiagram
+    participant Admin as Administrator
+    participant Browser as Browser (Client)
+    participant DB as Firestore
+    Admin->>Browser: Click "Save as Excel"
+    Browser->>DB: Fetch Responses & Answers for Event
+    Browser->>Browser: Construct CSV Headers (Timestamp, Name, Token, Questions...)
+    Browser->>Browser: Iterate responses & map answers to columns
+    Browser->>Browser: Sanitize content & escape double quotes
+    Browser->>Browser: Generate CSV Blob with UTF-8 encoding
+    Browser->>Browser: Trigger file download: recall-[event-title]-responses.csv
+    Browser-->>Admin: Download completed
 ```
 
-The exported spreadsheet structures data across four dedicated sheets:
-1. **Summary:** Displays event metadata (title, dates, response counters, export date).
-2. **Responses:** Matrix layout mapping each respondent row to question columns.
-3. **Questions:** Metadata list of all questions (ID, Text, Type, Required, Options).
-4. **Question Answers:** A flat list mapping every individual answer document for granular database re-imports or advanced statistics.
+The exported spreadsheet file matches standard tabular structures:
+- **Columns:** Map out Respondent metadata (Submitted Timestamp, Respondent Name, Token) followed by each question defined in the questionnaire.
+- **Rows:** A separate entry for each submitted response.
+- **Cell Values:** Raw text strings, numbers, or semi-colon-separated lists (for multiple choice questions).
 
 ---
 
@@ -193,7 +194,7 @@ recall/
 │   │           ├── builder/             # Drag-and-drop questionnaire editor
 │   │           └── responses/           # Analytics charts and exports
 │   ├── api/                             # Backend Endpoints
-│   │   ├── export-responses-to-sheets/  # Google API JWT auth & sheet builder
+│   │   ├── export-responses-to-sheets/  # Unused legacy endpoint (Excel downloads are client-side)
 │   │   ├── ping/                        # Keeping database active (cron target)
 │   │   ├── session/                     # HTTP-Only cookie injector/remover
 │   │   └── submit-response/             # Validated public response receiver
@@ -333,9 +334,8 @@ To ensure future Executive Committees can take over operations seamlessly, follo
   - The outgoing Tech Lead must update the password directly via the **Firebase Console** (Authentication -> Users -> Reset Password).
   - The incoming Tech Lead should change the password in-app at `/reset-password` after proving knowledge of the current credentials.
   - Distribute the new password securely via official college emails (never via messaging applications).
-* **📈 Google Cloud Service Account Permissions:**
-  - If spreadsheet export fails, verify that the service account defined in `FIREBASE_SERVICE_ACCOUNT_JSON` is granted the **Editor** role in the Google Cloud Console and that the **Google Sheets API** and **Google Drive API** are enabled.
-  - Ensure the target Google Sheet destination account has permission to write files on the Shared Drive.
+* **📈 Firebase Admin SDK Permissions:**
+  - Ensure that the service account JSON defined in the `FIREBASE_SERVICE_ACCOUNT_JSON` environment variable has the necessary permissions to access your Firestore database (e.g., **Firebase Admin SDK Administrator Service Agent** or **Editor** role on the project).
 
 ---
 *Created and maintained by the Computer Science Association (CSA), RIT Kottayam.*
