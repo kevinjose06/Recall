@@ -1,4 +1,4 @@
-import { collection, doc, setDoc, getDocs, orderBy, query, writeBatch } from "firebase/firestore";
+import { collection, doc, setDoc, getDocs, orderBy, query, writeBatch, updateDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Event, Question } from "./types";
 
@@ -60,3 +60,9 @@ export async function saveQuestions(eventId: string, questions: Array<Omit<Quest
   await batch.commit();
   return savedIds;
 }
+
+export async function updateEventPublishStatus(eventId: string, isPublished: boolean) {
+  const eventRef = doc(db, "events", eventId);
+  await updateDoc(eventRef, { is_published: isPublished });
+}
+

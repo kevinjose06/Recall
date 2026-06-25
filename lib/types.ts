@@ -21,6 +21,7 @@ export interface Event {
   event_type: EventType;
   created_at?: string; // Stored as ISO string in Firestore
   response_count?: number;
+  is_published?: boolean;
 }
 
 export interface Question {

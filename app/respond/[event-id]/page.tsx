@@ -5,6 +5,7 @@ import { ParticipantForm } from "@/components/ParticipantForm";
 import { EventTypeBadge } from "@/components/ui/Badge";
 import type { Question } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 
 interface PageProps {
@@ -48,6 +49,84 @@ export default async function RespondPage({ params }: PageProps) {
   ]);
 
   if (!event) notFound();
+
+  const isPublished = Boolean(event.is_published);
+
+  if (!isPublished) {
+    return (
+      <div className="min-h-screen w-full bg-transparent text-[var(--color-text-primary)] relative overflow-x-hidden flex flex-col items-center">
+        {/* Top Header Bar matching the Builder/Admin styling */}
+        <header
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "14px 20px",
+            height: "72px",
+            minHeight: "72px",
+            backgroundColor: "transparent",
+            width: "100%",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              flexShrink: 0,
+            }}
+          >
+            <img
+              src="/csa-logo.png?v=2"
+              alt="CSA logo"
+              width={36}
+              height={36}
+              style={{
+                objectFit: "contain",
+                filter: "brightness(0) invert(1)",
+                opacity: 1,
+              }}
+            />
+            <span
+              style={{
+                fontSize: "1.125rem",
+                fontWeight: 700,
+                color: "#e5e2e1",
+                letterSpacing: "-0.02em",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              Recall
+            </span>
+          </div>
+        </header>
+
+        <main className="w-full max-w-3xl px-5 pt-12 flex flex-col gap-10 items-center justify-center my-auto">
+          <Card padding="lg" className="stagger-in w-[calc(100%-32px)] md:w-full mx-auto text-center flex flex-col items-center gap-4" style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid rgba(255, 255, 255, 0.08)", backdropFilter: "blur(20px)" }}>
+            <div className="w-16 h-16 rounded-full bg-[var(--color-warning)]/10 flex items-center justify-center text-[var(--color-warning)] mb-2">
+              <span className="material-symbols-outlined text-[36px]">unpublished</span>
+            </div>
+            <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0, lineHeight: 1.25 }}>
+              Feedback Form Unavailable
+            </h1>
+            <p className="text-[var(--color-text-secondary)] text-base font-medium max-w-md">
+              The feedback form for <strong>{event.title}</strong> is currently not accepting responses. 
+            </p>
+            <p className="text-[var(--color-text-secondary)] text-sm">
+              Please contact the event administrator if you believe this is an error.
+            </p>
+            <div className="mt-4">
+              <Link href="/">
+                <Button variant="secondary" size="md">
+                  Go to home page
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        </main>
+      </div>
+    );
+  }
 
   const hasQuestions = questions && questions.length > 0;
 

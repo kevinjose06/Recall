@@ -32,6 +32,7 @@ export default async function BuilderPage({ params }: PageProps) {
         eventTitle={event.title}
         initialQuestions={questions}
         isLocked={isLocked}
+        isPublished={Boolean(event.is_published)}
       />
     </div>
   );

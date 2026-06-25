@@ -10,7 +10,7 @@ import {
   DraggableProvidedDraggableProps,
   DraggableProvidedDragHandleProps,
 } from "@hello-pangea/dnd";
-import { saveQuestions } from "@/lib/db";
+import { saveQuestions, updateEventPublishStatus } from "@/lib/db";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import type { Question, QuestionType } from "@/lib/types";
@@ -34,6 +34,7 @@ interface BuilderProps {
   eventTitle: string;
   initialQuestions: Question[];
   isLocked: boolean;
+  isPublished: boolean;
 }
 
 interface DraftQuestion {
@@ -524,7 +525,33 @@ export function QuestionnaireBuilder({
   eventTitle,
   initialQuestions,
   isLocked,
+  isPublished,
 }: BuilderProps) {
+  const [published, setPublished] = React.useState(isPublished);
+  const [isTogglingPublish, setIsTogglingPublish] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
+
+  async function handleTogglePublish() {
+    setIsTogglingPublish(true);
+    try {
+      const newStatus = !published;
+      await updateEventPublishStatus(eventId, newStatus);
+      setPublished(newStatus);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsTogglingPublish(false);
+    }
+  }
+
+  function handleCopyLink() {
+    const link = `${window.location.origin}/respond/${eventId}`;
+    navigator.clipboard.writeText(link).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
   const [questions, setQuestions] = React.useState<DraftQuestion[]>(() =>
     initialQuestions.map((q) => ({
       id: q.id,
@@ -824,16 +851,28 @@ export function QuestionnaireBuilder({
             </Button>
           </Link>
 
+          {published && (
+            <Button
+              onClick={handleCopyLink}
+              variant="secondary"
+              size="md"
+              leftIcon={<span className="material-symbols-outlined text-[20px]">{copied ? "done" : "content_copy"}</span>}
+              className="responsive-button-padding"
+            >
+              <span className="responsive-button-text">{copied ? "Copied!" : "Copy Link"}</span>
+            </Button>
+          )}
+
           <Button
-            onClick={handleSave}
-            isLoading={isSaving}
-            disabled={isSaving || questions.length === 0}
-            variant="secondary-light"
+            onClick={handleTogglePublish}
+            isLoading={isTogglingPublish}
+            disabled={isTogglingPublish || questions.length === 0}
+            variant={published ? "danger" : "secondary-light"}
             size="md"
-            leftIcon={<span className="material-symbols-outlined text-[20px]">save</span>}
+            leftIcon={<span className="material-symbols-outlined text-[20px]">{published ? "unpublished" : "publish"}</span>}
             className="responsive-button-padding"
           >
-            <span className="responsive-button-text">Save</span>
+            <span className="responsive-button-text">{published ? "Unpublish" : "Publish"}</span>
           </Button>
         </div>
       </div>

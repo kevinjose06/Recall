@@ -46,6 +46,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Event not found." }, { status: 400 });
     }
 
+    const eventData = eventSnap.data();
+    if (!eventData?.is_published) {
+      return NextResponse.json({ error: "This feedback form is not accepting responses." }, { status: 400 });
+    }
+
     const questionsSnapshot = await eventRef
       .collection("questions")
       .orderBy("order_index", "asc")
