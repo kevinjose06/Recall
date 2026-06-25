@@ -155,17 +155,29 @@ function QuestionResponseView({
           <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
             {prevUrl ? (
               <Link href={prevUrl} tabIndex={-1}>
-                <Button type="button" variant="ghost" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">chevron_left</span>}>Prev</Button>
+                <button type="button" className={styles.navButton}>
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                  <span>Prev</span>
+                </button>
               </Link>
             ) : (
-              <Button type="button" variant="ghost" size="sm" disabled leftIcon={<span className="material-symbols-outlined text-[18px]">chevron_left</span>}>Prev</Button>
+              <button type="button" className={styles.navButton} disabled>
+                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                <span>Prev</span>
+              </button>
             )}
             {nextUrl ? (
               <Link href={nextUrl} tabIndex={-1}>
-                <Button type="button" variant="ghost" size="sm" rightIcon={<span className="material-symbols-outlined text-[18px]">chevron_right</span>}>Next</Button>
+                <button type="button" className={styles.navButton}>
+                  <span>Next</span>
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </button>
               </Link>
             ) : (
-              <Button type="button" variant="ghost" size="sm" disabled rightIcon={<span className="material-symbols-outlined text-[18px]">chevron_right</span>}>Next</Button>
+              <button type="button" className={styles.navButton} disabled>
+                <span>Next</span>
+                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
             )}
           </div>
         </div>
@@ -237,17 +249,29 @@ function IndividualResponseView({
           <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
             {prevUrl ? (
               <Link href={prevUrl} tabIndex={-1}>
-                <Button type="button" variant="ghost" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">chevron_left</span>}>Prev</Button>
+                <button type="button" className={styles.navButton}>
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                  <span>Prev</span>
+                </button>
               </Link>
             ) : (
-              <Button type="button" variant="ghost" size="sm" disabled leftIcon={<span className="material-symbols-outlined text-[18px]">chevron_left</span>}>Prev</Button>
+              <button type="button" className={styles.navButton} disabled>
+                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                <span>Prev</span>
+              </button>
             )}
             {nextUrl ? (
               <Link href={nextUrl} tabIndex={-1}>
-                <Button type="button" variant="ghost" size="sm" rightIcon={<span className="material-symbols-outlined text-[18px]">chevron_right</span>}>Next</Button>
+                <button type="button" className={styles.navButton}>
+                  <span>Next</span>
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </button>
               </Link>
             ) : (
-              <Button type="button" variant="ghost" size="sm" disabled rightIcon={<span className="material-symbols-outlined text-[18px]">chevron_right</span>}>Next</Button>
+              <button type="button" className={styles.navButton} disabled>
+                <span>Next</span>
+                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
             )}
           </div>
         </div>
@@ -332,6 +356,8 @@ export default async function ResponsesPage({ params, searchParams }: PageProps)
         responseOptions={responseOptions}
         selectedQuestionId={selectedQuestionId}
         selectedResponseId={selectedResponseId}
+        responses={responses}
+        answers={answers}
       />
       
       <Card padding="lg" style={{ marginBottom: "24px" }}>

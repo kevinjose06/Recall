@@ -4,7 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/Button";
-import type { Question } from "@/lib/types";
+import type { Question, Response } from "@/lib/types";
 import styles from "./responses.module.css";
 
 import Link from "next/link";
@@ -19,6 +19,8 @@ interface ResponsesToolbarProps {
   responseOptions: { id: string; label: string }[];
   selectedQuestionId: string;
   selectedResponseId: string;
+  responses: Response[];
+  answers: any[];
 }
 
 interface DropdownOption {
@@ -126,13 +128,61 @@ export function ResponsesToolbar({
   responseOptions,
   selectedQuestionId,
   selectedResponseId,
+  responses,
+  answers,
 }: ResponsesToolbarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isSaving, setIsSaving] = React.useState(false);
-  const [exportError, setExportError] = React.useState("");
-  const [sheetUrl, setSheetUrl] = React.useState("");
+
+  function handleDownloadExcel() {
+    // Build CSV Headers
+    const headers = [
+      "Timestamp",
+      "Respondent Name",
+      "Respondent Token",
+      ...questions.map(q => q.question_text)
+    ];
+
+    // Build CSV Rows
+    const csvRows = responses.map(response => {
+      const rowAnswers = questions.map(q => {
+        const ans = answers.find(a => a.response_id === response.id && a.question_id === q.id);
+        if (!ans) return "";
+        const val = ans.answer_value;
+        if (Array.isArray(val)) {
+          return val.join("; ");
+        }
+        return String(val);
+      });
+
+      return [
+        response.submitted_at ? new Date(response.submitted_at).toLocaleString() : "",
+        response.respondent_name || "Anonymous",
+        response.respondent_token || "",
+        ...rowAnswers
+      ];
+    });
+
+    // Format as CSV
+    const csvContent = [
+      headers.map(h => `"${h.replace(/"/g, '""')}"`).join(","),
+      ...csvRows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    
+    const sanitizedTitle = eventTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    link.setAttribute("download", `recall-${sanitizedTitle}-responses.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
 
   function updateViewParams(next: {
     mode?: ViewMode;
@@ -163,45 +213,7 @@ export function ResponsesToolbar({
     router.push(query ? `${pathname}?${query}` : pathname);
   }
 
-  async function handleSaveToSheets() {
-    setIsSaving(true);
-    setExportError("");
-    setSheetUrl("");
 
-    try {
-      const token = await auth.currentUser?.getIdToken();
-      const response = await fetch("/api/export-responses-to-sheets", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ eventId }),
-      });
-
-      const payload = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        throw new Error(
-          typeof payload.error === "string"
-            ? payload.error
-            : "Failed to save responses to Google Sheets."
-        );
-      }
-
-      if (typeof payload.spreadsheetUrl === "string") {
-        setSheetUrl(payload.spreadsheetUrl);
-      }
-    } catch (error) {
-      setExportError(
-        error instanceof Error
-          ? error.message
-          : "Failed to save responses to Google Sheets."
-      );
-    } finally {
-      setIsSaving(false);
-    }
-  }
 
   return (
     <div className={styles.toolbarContainer}>
@@ -263,33 +275,11 @@ export function ResponsesToolbar({
           type="button"
           variant="secondary-light"
           size="sm"
-          onClick={handleSaveToSheets}
-          isLoading={isSaving}
-          leftIcon={
-            !isSaving ? (
-              <span className="material-symbols-outlined text-sm">table_view</span>
-            ) : undefined
-          }
+          onClick={handleDownloadExcel}
+          leftIcon={<span className="material-symbols-outlined text-sm">table_view</span>}
         >
-          {isSaving ? "Saving" : "Save to Sheets"}
+          Save as Excel
         </Button>
-
-        {sheetUrl && (
-          <a
-            className={styles.exportStatusLink}
-            href={sheetUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Open sheet
-          </a>
-        )}
-
-        {exportError && (
-          <span className={styles.exportStatusError} role="alert">
-            {exportError}
-          </span>
-        )}
       </div>
     </div>
   );
