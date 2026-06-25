@@ -97,12 +97,42 @@ export function ParticipantForm({
   const [answers, setAnswers] = React.useState<Record<string, AnswerValue>>({});
   const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
   const [submitError, setSubmitError] = React.useState("");
+  const [draftLoaded, setDraftLoaded] = React.useState(false);
+
   const questionnaireSignature = React.useMemo(
     () => getQuestionnaireSignature(questions),
     [questions]
   );
   const submissionStorageKey = `${SUBMISSION_KEY_PREFIX}${eventId}_${questionnaireSignature}`;
   const submittedCurrentQuestionnaire = useLocalStorageValue(submissionStorageKey);
+
+  // Load answers from localStorage on mount
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`recall_draft_${eventId}`);
+      if (saved) {
+        setAnswers(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error("Failed to load draft responses", e);
+    } finally {
+      setDraftLoaded(true);
+    }
+  }, [eventId]);
+
+  // Save answers to localStorage on change
+  React.useEffect(() => {
+    if (!draftLoaded) return;
+    try {
+      if (Object.keys(answers).length === 0) {
+        localStorage.removeItem(`recall_draft_${eventId}`);
+      } else {
+        localStorage.setItem(`recall_draft_${eventId}`, JSON.stringify(answers));
+      }
+    } catch (e) {
+      console.error("Failed to save draft responses", e);
+    }
+  }, [answers, eventId, draftLoaded]);
 
   function setSingleAnswer(questionId: string, value: string) {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
@@ -136,6 +166,9 @@ export function ParticipantForm({
       setAnswers({});
       setValidationErrors({});
       setSubmitError("");
+      try {
+        localStorage.removeItem(`recall_draft_${eventId}`);
+      } catch (e) {}
     }
   }
 
@@ -226,6 +259,9 @@ export function ParticipantForm({
       }
 
       setLocalStorageItem(submissionStorageKey, respondentToken);
+      try {
+        localStorage.removeItem(`recall_draft_${eventId}`);
+      } catch (e) {}
       setFormState("success");
     } catch (err) {
       console.error(err);
@@ -291,6 +327,17 @@ export function ParticipantForm({
           }
         }
       `}</style>
+
+      {/* Draft saved badge at top */}
+      <div className="w-[calc(100%-32px)] md:w-full max-w-3xl mx-auto flex justify-end -mb-2 z-10" style={{ animationDelay: "0.2s" }}>
+        {draftLoaded && Object.keys(answers).length > 0 && (
+          <span className="text-[var(--color-secondary)] text-[13px] font-medium flex items-center gap-1.5 opacity-80 animate-fade-in bg-[var(--color-secondary)]/5 px-3 py-1.5 rounded-full border border-[var(--color-secondary)]/10">
+            <span className="material-symbols-outlined text-[16px]">cloud_done</span>
+            <span>Draft saved</span>
+          </span>
+        )}
+      </div>
+
       <div className="flex flex-col gap-6 w-full items-center">
         {questions.map((question, idx) => {
           const hasError = !!validationErrors[question.id];
@@ -494,22 +541,24 @@ export function ParticipantForm({
       )}
 
       {/* Submit bar */}
-      <div className="mt-2 stagger-in max-w-3xl mx-auto w-[calc(100%-32px)] md:w-full flex justify-between items-center gap-4 mb-6" style={{ animationDelay: `${(questions.length + 2) * 0.1}s` }}>
-        <Button
-          type="button"
-          onClick={clearForm}
-          variant="primary"
-          size="md"
-          className="max-w-[140px]"
-        >
-          Clear form
-        </Button>
+      <div className="mt-2 stagger-in max-w-3xl mx-auto w-[calc(100%-32px)] md:w-full flex flex-col sm:flex-row justify-between items-center gap-4 mb-6" style={{ animationDelay: `${(questions.length + 2) * 0.1}s` }}>
+        <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-start">
+          <Button
+            type="button"
+            onClick={clearForm}
+            variant="primary"
+            size="md"
+            className="max-w-[140px]"
+          >
+            Clear form
+          </Button>
+        </div>
         <Button
           type="submit"
           variant="secondary-light"
           size="md"
           isLoading={formState === "submitting"}
-          className="w-full max-w-[200px] md:max-w-[320px] tracking-wider"
+          className="w-full sm:max-w-[200px] md:max-w-[320px] tracking-wider"
         >
           {formState === "submitting" ? "Submitting…" : "Submit feedback"}
         </Button>

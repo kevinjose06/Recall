@@ -543,7 +543,7 @@ export function QuestionnaireBuilder({
   });
 
   const [isSaving, setIsSaving] = React.useState(false);
-  const [saveStatus, setSaveStatus] = React.useState<"idle" | "saved" | "error">("idle");
+  const [saveStatus, setSaveStatus] = React.useState<"idle" | "saving" | "saved" | "error" | "validation_error">("idle");
   const [saveError, setSaveError] = React.useState("");
 
   function setQuestionsWithHistory(newQuestions: DraftQuestion[] | ((prev: DraftQuestion[]) => DraftQuestion[])) {
@@ -576,6 +576,7 @@ export function QuestionnaireBuilder({
   }
 
   function addQuestion() {
+    if (isLocked) return;
     setQuestionsWithHistory((prev) => [
       ...prev,
       {
@@ -590,21 +591,23 @@ export function QuestionnaireBuilder({
   }
 
   function updateQuestion(id: string, updated: DraftQuestion) {
+    if (isLocked) return;
     setQuestionsWithHistory((prev) =>
       prev.map((q) => (q.id === id ? updated : q))
     );
   }
 
   function removeQuestion(id: string) {
+    if (isLocked) return;
     setQuestionsWithHistory((prev) =>
       prev
-        .filter((q) => q.id !== id)
-        .map((q, i) => ({ ...q, order_index: i }))
+          .filter((q) => q.id !== id)
+          .map((q, i) => ({ ...q, order_index: i }))
     );
   }
 
   function onDragEnd(result: DropResult) {
-    if (!result.destination) return;
+    if (isLocked || !result.destination) return;
     const reordered = Array.from(questions);
     const [moved] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, moved);
@@ -631,18 +634,13 @@ export function QuestionnaireBuilder({
     return null;
   }
 
-  async function handleSave() {
-    const err = validate();
-    if (err) {
-      setSaveError(err);
-      return;
-    }
-    setSaveError("");
+  async function performSave(questionsToSave: DraftQuestion[]) {
     setIsSaving(true);
-    setSaveStatus("idle");
+    setSaveStatus("saving");
+    setSaveError("");
 
     try {
-      const rows = questions.map((q, i) => ({
+      const rows = questionsToSave.map((q, i) => ({
         id: q.saved_id,
         event_id: eventId,
         question_text: q.question_text.trim(),
@@ -665,7 +663,9 @@ export function QuestionnaireBuilder({
       );
 
       setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 3000);
+      setTimeout(() => {
+        setSaveStatus((current) => current === "saved" ? "idle" : current);
+      }, 3000);
     } catch (err) {
       console.error(err);
       setSaveStatus("error");
@@ -674,6 +674,49 @@ export function QuestionnaireBuilder({
       setIsSaving(false);
     }
   }
+
+  async function handleSave() {
+    const err = validate();
+    if (err) {
+      setSaveStatus("validation_error");
+      setSaveError(err);
+      return;
+    }
+    await performSave(questions);
+  }
+
+  // Debounced auto-save effect
+  const isInitialMount = React.useRef(true);
+  const questionsContentSignature = JSON.stringify(
+    questions.map((q) => ({
+      question_text: q.question_text,
+      question_type: q.question_type,
+      options: q.options,
+      order_index: q.order_index,
+      is_required: q.is_required,
+    }))
+  );
+
+  React.useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    if (isLocked) return;
+
+    const delayDebounceFn = setTimeout(() => {
+      const err = validate();
+      if (err) {
+        setSaveStatus("validation_error");
+        setSaveError(err);
+        return;
+      }
+      performSave(questions);
+    }, 1500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [questionsContentSignature, isLocked]);
 
   return (
     <div>
@@ -708,6 +751,12 @@ export function QuestionnaireBuilder({
             height: 38px !important;
           }
         }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin 2s linear infinite;
+        }
       `}</style>
 
       {/* Fixed Navbar Controls */}
@@ -719,9 +768,19 @@ export function QuestionnaireBuilder({
           <span className="text-[1.05rem] font-semibold text-white tracking-wide responsive-navbar-count">
             {questions.length} <span className="responsive-button-text">Question{questions.length !== 1 ? "s" : ""}</span><span className="md:hidden">Q{questions.length !== 1 ? "s" : ""}</span>
           </span>
+          {saveStatus === "saving" && (
+            <span className="text-[var(--color-primary)] text-[1.05rem] font-semibold flex items-center gap-1.5 animate-pulse">
+              <span className="material-symbols-outlined text-[18px] animate-spin-slow">sync</span> <span className="responsive-button-text">Saving...</span>
+            </span>
+          )}
           {saveStatus === "saved" && (
             <span className="text-[var(--color-secondary)] text-[1.05rem] font-semibold flex items-center gap-1.5 animate-fade-in">
               <span className="material-symbols-outlined text-[18px]">check_circle</span> <span className="responsive-button-text">Saved</span>
+            </span>
+          )}
+          {saveStatus === "validation_error" && (
+            <span className="text-[var(--color-warning)] text-[1.05rem] font-semibold flex items-center gap-1.5" title={saveError || "Some fields have validation errors"}>
+              <span className="material-symbols-outlined text-[18px]">warning</span> <span className="responsive-button-text">Unsaved (fix errors)</span>
             </span>
           )}
           {saveStatus === "error" && (
@@ -840,7 +899,7 @@ export function QuestionnaireBuilder({
                       dragHandleProps={provided.dragHandleProps}
                       innerRef={provided.innerRef}
                       isDragging={snapshot.isDragging}
-                      disabled={isSaving}
+                      disabled={isLocked}
                     />
                   )}
                 </Draggable>
@@ -850,7 +909,7 @@ export function QuestionnaireBuilder({
               <div className="flex justify-center mt-8">
                 <Button
                   onClick={addQuestion}
-                  disabled={isSaving}
+                  disabled={isLocked}
                   variant="secondary-light"
                   size="lg"
                   leftIcon={<span className="material-symbols-outlined text-[24px]">add</span>}
