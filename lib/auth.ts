@@ -11,16 +11,22 @@ import { auth } from "./firebase";
 export async function login(email: string, pass: string) {
   const userCredential = await signInWithEmailAndPassword(auth, email, pass);
   
-  // Set the __session cookie so Next.js middleware can read it
+  // Set the __session cookie via our server API endpoint to enforce HttpOnly security
   const token = await userCredential.user.getIdToken();
-  document.cookie = `__session=${token}; path=/; max-age=3600; SameSite=Lax; Secure`;
+  await fetch("/api/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
   
   return userCredential.user;
 }
 
 export async function logout() {
   await firebaseSignOut(auth);
-  document.cookie = `__session=; path=/; max-age=0; SameSite=Lax; Secure`;
+  await fetch("/api/session", {
+    method: "DELETE",
+  });
 }
 
 export async function reAuthAndChangePassword(currentPass: string, newPass: string) {

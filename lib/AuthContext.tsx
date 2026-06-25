@@ -19,11 +19,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
-        // Keep __session cookie fresh
+        // Keep __session cookie fresh via the server side API handler
         const token = await u.getIdToken();
-        document.cookie = `__session=${token}; path=/; max-age=3600; SameSite=Lax; Secure`;
+        await fetch("/api/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
       } else {
-        document.cookie = `__session=; path=/; max-age=0; SameSite=Lax; Secure`;
+        await fetch("/api/session", {
+          method: "DELETE",
+        });
       }
       setLoading(false);
     });

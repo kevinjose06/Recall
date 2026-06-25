@@ -394,6 +394,26 @@ const PixelBlast = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const prevConfigRef = useRef<any>(null);
 
+  // Synchronize dynamic visibility state and prefers-reduced-motion media query
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      visibilityRef.current.visible = document.visibilityState === "visible";
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handleMotionChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      speedRef.current = e.matches ? 0 : speed;
+    };
+    handleMotionChange(mediaQuery);
+    mediaQuery.addEventListener("change", handleMotionChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      mediaQuery.removeEventListener("change", handleMotionChange);
+    };
+  }, [speed]);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;

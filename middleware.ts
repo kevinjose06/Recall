@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Auth proxy (formerly middleware).
+ * Auth middleware.
  * Protected routes:  /dashboard/*, /events/*
  * Auth redirect:     /login — bounce away if already authenticated
  * Public routes:     /respond/*, /api/*, everything else
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Firebase auth sets a __session cookie when we login
