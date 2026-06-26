@@ -497,7 +497,7 @@ const PixelBlast = ({
       const quad = new THREE.Mesh(quadGeom, material);
       scene.add(quad);
 
-      const clock = new THREE.Clock();
+      let startTime = performance.now();
 
       const setSize = () => {
         const w = container.clientWidth || 1;
@@ -604,7 +604,7 @@ const PixelBlast = ({
           raf = requestAnimationFrame(animate);
           return;
         }
-        uniforms.uTime.value = timeOffset + clock.getElapsedTime() * speedRef.current;
+        uniforms.uTime.value = timeOffset + ((performance.now() - startTime) / 1000) * speedRef.current;
         if (liquidEffect)
           (liquidEffect.uniforms.get("uTime") as THREE.Uniform<number>).value =
             uniforms.uTime.value;
@@ -632,7 +632,6 @@ const PixelBlast = ({
         scene,
         camera,
         material,
-        clock,
         clickIx: 0,
         uniforms,
         resizeObserver: ro,

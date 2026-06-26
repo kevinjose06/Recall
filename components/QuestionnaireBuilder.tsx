@@ -577,6 +577,42 @@ export function QuestionnaireBuilder({
 
   const [isAIModalOpen, setIsAIModalOpen] = React.useState(false);
 
+  // Long-press tooltip state & references
+  const touchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const didLongPressRef = React.useRef(false);
+  const [activeTooltip, setActiveTooltip] = React.useState<"preview" | "copy" | "publish" | null>(null);
+
+  const handleTouchStart = (type: "preview" | "copy" | "publish") => {
+    if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
+    didLongPressRef.current = false;
+    touchTimeoutRef.current = setTimeout(() => {
+      setActiveTooltip(type);
+      didLongPressRef.current = true;
+    }, 450);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+      touchTimeoutRef.current = null;
+    }
+    setActiveTooltip(null);
+    if (didLongPressRef.current) {
+      setTimeout(() => {
+        didLongPressRef.current = false;
+      }, 100);
+    }
+  };
+
+  const handleTouchCancel = () => {
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+      touchTimeoutRef.current = null;
+    }
+    setActiveTooltip(null);
+    didLongPressRef.current = false;
+  };
+
   React.useEffect(() => {
     const hasAutoOpened = sessionStorage.getItem(`ai-auto-opened-${eventId}`);
     if (initialQuestions.length === 0 && !hasAutoOpened) {
@@ -785,30 +821,50 @@ export function QuestionnaireBuilder({
         @media (max-width: 767px) {
           .responsive-navbar {
             top: 12px !important;
-            width: 92% !important;
-            max-width: 400px !important;
+            width: 94% !important;
+            max-width: 440px !important;
             height: 56px !important;
             min-height: 56px !important;
-            padding: 0 20px !important;
-            gap: 16px !important;
+            padding: 0 14px !important;
+            gap: 12px !important;
             justify-content: space-between !important;
           }
           .responsive-navbar-options {
-            gap: 16px !important;
+            gap: 8px !important;
           }
           .responsive-navbar-count {
-            font-size: 0.9rem !important;
+            font-size: 0.85rem !important;
+            white-space: nowrap !important;
           }
-          .responsive-navbar-divider {
-            padding-right: 12px !important;
-            margin-right: 4px !important;
-          }
-          .responsive-button-text {
+          .responsive-navbar-count > span:nth-of-type(2) {
             display: none !important;
           }
+          .responsive-navbar-divider {
+            padding-right: 8px !important;
+            margin-right: 2px !important;
+          }
+          .responsive-button-text {
+            display: inline-block !important;
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+          }
           .responsive-button-padding {
-            padding: 0 12px !important;
-            height: 38px !important;
+            padding: 0 10px !important;
+            width: auto !important;
+            height: 36px !important;
+            min-width: unset !important;
+            justify-content: center !important;
+            gap: 4px !important;
+          }
+          .responsive-button-padding > span:nth-of-type(2) {
+            display: inline-flex !important;
+          }
+          /* Make undo/redo buttons a bit smaller/more compact on mobile */
+          .responsive-navbar-divider button {
+            padding: 4px !important;
+          }
+          .responsive-navbar-divider button span {
+            font-size: 18px !important;
           }
         }
         @keyframes spin {
@@ -816,6 +872,13 @@ export function QuestionnaireBuilder({
         }
         .animate-spin-slow {
           animation: spin 2s linear infinite;
+        }
+        @keyframes tooltipFade {
+          from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .animate-tooltip-fade {
+          animation: tooltipFade 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
 
@@ -873,39 +936,88 @@ export function QuestionnaireBuilder({
             </button>
           </div>
 
-          <Link href={`/respond/${eventId}`} target="_blank">
+          <Link 
+            href={`/respond/${eventId}`} 
+            target="_blank"
+            onClick={(e) => {
+              if (didLongPressRef.current) {
+                e.preventDefault();
+              }
+            }}
+          >
             <Button
               variant="primary"
               size="md"
               leftIcon={<span className="material-symbols-outlined text-[20px]">visibility</span>}
               className="responsive-button-padding"
+              style={{ overflow: "visible" }}
+              onTouchStart={() => handleTouchStart("preview")}
+              onTouchEnd={handleTouchEnd}
+              onTouchMove={handleTouchCancel}
             >
               <span className="responsive-button-text">Preview</span>
+              {activeTooltip === "preview" && (
+                <div className="absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 bg-[#18181b] border border-white/10 text-white text-[11px] font-semibold py-1.5 px-3 rounded-md shadow-2xl pointer-events-none z-[1000] whitespace-nowrap animate-tooltip-fade">
+                  Preview
+                </div>
+              )}
             </Button>
           </Link>
 
           {published && (
             <Button
-              onClick={handleCopyLink}
+              onClick={(e) => {
+                if (didLongPressRef.current) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return;
+                }
+                handleCopyLink();
+              }}
               variant="secondary"
               size="md"
               leftIcon={<span className="material-symbols-outlined text-[20px]">{copied ? "done" : "content_copy"}</span>}
               className="responsive-button-padding"
+              style={{ overflow: "visible" }}
+              onTouchStart={() => handleTouchStart("copy")}
+              onTouchEnd={handleTouchEnd}
+              onTouchMove={handleTouchCancel}
             >
               <span className="responsive-button-text">{copied ? "Copied!" : "Copy Link"}</span>
+              {activeTooltip === "copy" && (
+                <div className="absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 bg-[#18181b] border border-white/10 text-white text-[11px] font-semibold py-1.5 px-3 rounded-md shadow-2xl pointer-events-none z-[1000] whitespace-nowrap animate-tooltip-fade">
+                  {copied ? "Copied!" : "Copy Link"}
+                </div>
+              )}
             </Button>
           )}
 
           <Button
-            onClick={handleTogglePublish}
+            onClick={(e) => {
+              if (didLongPressRef.current) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+              }
+              handleTogglePublish();
+            }}
             isLoading={isTogglingPublish}
             disabled={isTogglingPublish || questions.length === 0}
             variant={published ? "danger" : "secondary-light"}
             size="md"
             leftIcon={<span className="material-symbols-outlined text-[20px]">{published ? "unpublished" : "publish"}</span>}
             className="responsive-button-padding"
+            style={{ overflow: "visible" }}
+            onTouchStart={() => handleTouchStart("publish")}
+            onTouchEnd={handleTouchEnd}
+            onTouchMove={handleTouchCancel}
           >
             <span className="responsive-button-text">{published ? "Unpublish" : "Publish"}</span>
+            {activeTooltip === "publish" && (
+              <div className="absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 bg-[#18181b] border border-white/10 text-white text-[11px] font-semibold py-1.5 px-3 rounded-md shadow-2xl pointer-events-none z-[1000] whitespace-nowrap animate-tooltip-fade">
+                {published ? "Unpublish" : "Publish"}
+              </div>
+            )}
           </Button>
         </div>
       </div>
