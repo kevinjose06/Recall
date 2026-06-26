@@ -14,6 +14,7 @@ import { saveQuestions, updateEventPublishStatus } from "@/lib/db";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import type { Question, QuestionType } from "@/lib/types";
+import { AIGeneratorModal } from "./AIGeneratorModal";
 
 const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   single_choice: "Single choice",
@@ -573,6 +574,37 @@ export function QuestionnaireBuilder({
   const [saveStatus, setSaveStatus] = React.useState<"idle" | "saving" | "saved" | "error" | "validation_error">("idle");
   const [saveError, setSaveError] = React.useState("");
 
+  const [isAIModalOpen, setIsAIModalOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const hasAutoOpened = sessionStorage.getItem(`ai-auto-opened-${eventId}`);
+    if (initialQuestions.length === 0 && !hasAutoOpened) {
+      setIsAIModalOpen(true);
+      sessionStorage.setItem(`ai-auto-opened-${eventId}`, "true");
+    }
+  }, [initialQuestions, eventId]);
+
+  function handleAddAIQuestions(newAIQuestions: Array<{
+    question_text: string;
+    question_type: QuestionType;
+    options: string[] | null;
+    is_required: boolean;
+  }>) {
+    if (isLocked) return;
+    setQuestionsWithHistory((prev) => {
+      const startOrderIndex = prev.length;
+      const formatted: DraftQuestion[] = newAIQuestions.map((q, idx) => ({
+        id: generateLocalId(),
+        question_text: q.question_text,
+        question_type: q.question_type,
+        options: q.options ?? [],
+        order_index: startOrderIndex + idx,
+        is_required: q.is_required,
+      }));
+      return [...prev, ...formatted];
+    });
+  }
+
   function setQuestionsWithHistory(newQuestions: DraftQuestion[] | ((prev: DraftQuestion[]) => DraftQuestion[])) {
     setQuestions((prev) => {
       const next = typeof newQuestions === "function" ? newQuestions(prev) : newQuestions;
@@ -891,12 +923,31 @@ export function QuestionnaireBuilder({
             <span className="material-symbols-outlined text-[16px] select-none">chevron_right</span>
             <span className="text-[var(--color-text-primary)]">Builder</span>
           </div>
-          <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-on-surface)", marginBottom: "8px", lineHeight: 1.25 }}>
-            Questionnaire builder
-          </h1>
-          <ul className="list-disc pl-5 m-0 text-white/90 text-[0.9375rem] font-medium tracking-wide">
-            <li>Drag cards by the top handle to reorder questions</li>
-          </ul>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-on-surface)", marginBottom: "8px", lineHeight: 1.25 }}>
+                Questionnaire builder
+              </h1>
+              <ul className="list-disc pl-5 m-0 text-white/90 text-[0.9375rem] font-medium tracking-wide">
+                <li>Drag cards by the top handle to reorder questions</li>
+              </ul>
+            </div>
+            <div className="gradient-border-wrapper p-[1px] rounded-full shrink-0 self-start md:self-center transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]">
+              <Button
+                onClick={() => setIsAIModalOpen(true)}
+                disabled={isLocked}
+                variant="secondary"
+                size="md"
+                leftIcon={<span className="material-symbols-outlined text-[20px]" style={{ color: "#c084fc" }}>auto_awesome</span>}
+                className="w-full h-full !bg-[#131313] hover:!bg-purple-500/15 !text-[#f3e8ff] before:!hidden !border-transparent transition-all duration-300"
+                style={{
+                  borderColor: "transparent",
+                }}
+              >
+                Generate with AI
+              </Button>
+            </div>
+          </div>
         </Card>
 
         {/* Validation error */}
@@ -962,6 +1013,12 @@ export function QuestionnaireBuilder({
         </Droppable>
       </DragDropContext>
       </div>
+
+      <AIGeneratorModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        onAddQuestions={handleAddAIQuestions}
+      />
     </div>
   );
 }

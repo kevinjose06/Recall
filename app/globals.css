@@ -444,3 +444,14 @@ select option {
   border-radius: var(--radius-2xl);
 }
 
+@keyframes border-dance {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-border-wrapper {
+  background: linear-gradient(90deg, rgba(168,85,247,0.5), rgba(236,72,153,0.5), rgba(168,85,247,0.5));
+  background-size: 200% auto;
+  animation: border-dance 3s linear infinite;
+}
