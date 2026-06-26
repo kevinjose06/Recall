@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/Button";
+import { AIButton } from "@/components/ui/AIButton";
 import { Spinner } from "@/components/ui/Spinner";
 import type { QuestionType } from "@/lib/types";
 
@@ -432,40 +433,74 @@ export function AIGeneratorModal({ isOpen, onClose, onAddQuestions }: AIGenerato
 
         {/* ── Footer ── */}
         <div
-          className="shrink-0 flex items-center justify-between"
           style={{
-            padding: "20px 32px",
+            flexShrink: 0,
+            padding: "16px 24px",
             borderTop: "1px solid rgba(255,255,255,0.08)",
             background: "rgba(10,10,11,0.8)",
-            gap: 12,
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "10px",
           }}
         >
           {suggestions.length === 0 ? (
             <>
-              <Button variant="ghost" onClick={onClose} disabled={isGenerating}>
+              <button
+                onClick={onClose}
+                disabled={isGenerating}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--color-text-secondary)",
+                  cursor: isGenerating ? "not-allowed" : "pointer",
+                  fontSize: "0.9375rem",
+                  fontFamily: "var(--font-sans)",
+                  fontWeight: 500,
+                  padding: "6px 12px",
+                  borderRadius: "var(--radius-full)",
+                  opacity: isGenerating ? 0.5 : 1,
+                }}
+              >
                 Cancel
-              </Button>
-              <Button
-                variant="primary"
+              </button>
+              <AIButton
                 onClick={handleGenerate}
                 disabled={isGenerating || !description.trim()}
-                leftIcon={<span className="material-symbols-outlined text-[18px]">auto_awesome</span>}
-                style={{ backgroundColor: "var(--color-primary)", borderColor: "transparent", color: "#fff" }}
+                icon="auto_awesome"
+                size="md"
               >
                 Generate suggestions
-              </Button>
+              </AIButton>
             </>
           ) : (
             <>
-              <Button variant="ghost" onClick={resetState}>
-                <span className="material-symbols-outlined text-[16px] mr-1">arrow_back</span>
+              <button
+                onClick={resetState}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--color-text-secondary)",
+                  cursor: "pointer",
+                  fontSize: "0.9375rem",
+                  fontFamily: "var(--font-sans)",
+                  fontWeight: 500,
+                  padding: "6px 12px",
+                  borderRadius: "var(--radius-full)",
+                }}
+              >
+                <span className="material-symbols-outlined text-[16px]">arrow_back</span>
                 Start over
-              </Button>
-              <div className="flex items-center" style={{ gap: 8 }}>
-                <Button variant="secondary" onClick={handleAddSelected} disabled={selectedIndices.size === 0}>
+              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <Button variant="secondary" size="sm" onClick={handleAddSelected} disabled={selectedIndices.size === 0}>
                   Add Selected ({selectedIndices.size})
                 </Button>
-                <Button variant="secondary-light" onClick={handleAddAll}>
+                <Button variant="secondary-light" size="sm" onClick={handleAddAll}>
                   Add All ({suggestions.length})
                 </Button>
               </div>

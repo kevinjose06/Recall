@@ -13,6 +13,7 @@ import {
 import { saveQuestions, updateEventPublishStatus } from "@/lib/db";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { AIButton } from "@/components/ui/AIButton";
 import type { Question, QuestionType } from "@/lib/types";
 import { AIGeneratorModal } from "./AIGeneratorModal";
 
@@ -932,21 +933,15 @@ export function QuestionnaireBuilder({
                 <li>Drag cards by the top handle to reorder questions</li>
               </ul>
             </div>
-            <div className="gradient-border-wrapper p-[1px] rounded-full shrink-0 self-start md:self-center transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]">
-              <Button
-                onClick={() => setIsAIModalOpen(true)}
-                disabled={isLocked}
-                variant="secondary"
-                size="md"
-                leftIcon={<span className="material-symbols-outlined text-[20px]" style={{ color: "#c084fc" }}>auto_awesome</span>}
-                className="w-full h-full !bg-[#131313] hover:!bg-purple-500/15 !text-[#f3e8ff] before:!hidden !border-transparent transition-all duration-300"
-                style={{
-                  borderColor: "transparent",
-                }}
-              >
-                Generate with AI
-              </Button>
-            </div>
+            <AIButton
+              onClick={() => setIsAIModalOpen(true)}
+              disabled={isLocked}
+              icon="auto_awesome"
+              size="md"
+              style={{ flexShrink: 0, alignSelf: "flex-start" }}
+            >
+              Generate with AI
+            </AIButton>
           </div>
         </Card>
 

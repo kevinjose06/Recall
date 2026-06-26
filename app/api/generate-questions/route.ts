@@ -1,7 +1,22 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { adminAuth } from '@/lib/firebase-admin';
 
 export async function POST(request: Request) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('__session')?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    try {
+      await adminAuth.verifyIdToken(token);
+    } catch (err) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { description } = await request.json();
     if (!description || !description.trim()) {
       return NextResponse.json({ error: 'Description is required' }, { status: 400 });

@@ -147,15 +147,16 @@
 .slide-fill-btn::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
   background-color: var(--color-hover-fill, #002e6b);
   z-index: 1;
   transform: scaleX(0);
   transform-origin: left;
   transition: transform var(--transition-slow);
+  border-radius: inherit;
 }
 
 .slide-fill-btn:hover:not(:disabled) {
@@ -444,14 +445,139 @@ select option {
   border-radius: var(--radius-2xl);
 }
 
+/* ─── Animated border utility (used by AI header button) ─── */
 @keyframes border-dance {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
 .gradient-border-wrapper {
-  background: linear-gradient(90deg, rgba(168,85,247,0.5), rgba(236,72,153,0.5), rgba(168,85,247,0.5));
-  background-size: 200% auto;
-  animation: border-dance 3s linear infinite;
+  background: linear-gradient(90deg, rgba(168,85,247,0.6), rgba(236,72,153,0.5), rgba(59,130,246,0.5), rgba(168,85,247,0.6));
+  background-size: 300% auto;
+  animation: border-dance 4s linear infinite;
 }
+
+/* ─── Premium AI Button ─── */
+/* Strategy: dark glass body inside an animated glowing border ring */
+
+@keyframes ai-border-spin {
+  0%   { --ai-border-angle: 0deg; }
+  100% { --ai-border-angle: 360deg; }
+}
+
+@keyframes ai-glow-breathe {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1;   }
+}
+
+@keyframes ai-icon-pop {
+  0%   { transform: scale(1)    rotate(0deg);   opacity: 1; }
+  40%  { transform: scale(1.25) rotate(-12deg); opacity: 1; }
+  60%  { transform: scale(1.25) rotate(12deg);  opacity: 1; }
+  100% { transform: scale(1)    rotate(0deg);   opacity: 1; }
+}
+
+/* Outer wrapper handles the animated border */
+.ai-btn-wrapper {
+  position: relative;
+  display: inline-flex;
+  border-radius: var(--radius-full);
+  padding: 1.5px;
+  background: linear-gradient(135deg, #a855f7, #ec4899, #6366f1, #a855f7);
+  background-size: 250% 250%;
+  animation: border-dance 3.5s linear infinite;
+  box-shadow:
+    0 0 12px rgba(168, 85, 247, 0.30),
+    0 0 24px rgba(236, 72, 153, 0.15);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.ai-btn-wrapper:hover {
+  box-shadow:
+    0 0 20px rgba(168, 85, 247, 0.55),
+    0 0 40px rgba(236, 72, 153, 0.30);
+  transform: translateY(-1px);
+}
+
+.ai-btn-wrapper:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Inner button is the dark glass pill */
+.ai-btn-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #0f0f12 !important;
+  color: #f3e8ff !important;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  font-family: var(--font-sans);
+  padding: 10px 22px !important;
+  border-radius: var(--radius-full) !important;
+  border: none !important;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: background 0.25s ease, color 0.25s ease;
+  letter-spacing: 0.01em;
+}
+
+.ai-btn-inner:hover {
+  background: #17131f !important;
+  color: #ffffff !important;
+}
+
+/* Subtle shimmer sweep on the inner surface */
+.ai-btn-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  background-position: 200% 0;
+  transition: background-position 0.55s ease;
+}
+
+.ai-btn-inner:hover::before {
+  background-position: -200% 0;
+}
+
+/* Icon */
+.ai-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  color: #c084fc;
+  transition: color 0.25s ease;
+  flex-shrink: 0;
+}
+
+.ai-btn-inner:hover .ai-btn-icon {
+  color: #e9d5ff;
+  animation: ai-icon-pop 0.5s ease;
+}
+
+/* Disabled state */
+.ai-btn-wrapper:has(.ai-btn-inner:disabled) {
+  background: rgba(255,255,255,0.06) !important;
+  box-shadow: none !important;
+  animation: none !important;
+  transform: none !important;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.ai-btn-inner:disabled {
+  cursor: not-allowed;
+  background: #0f0f12 !important;
+  color: rgba(255,255,255,0.3) !important;
+}
+

@@ -113,7 +113,6 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
-              placeholder="csa@ritkerala.ac.in"
               disabled={isLoading}
             />
 

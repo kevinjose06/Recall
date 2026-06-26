@@ -139,6 +139,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       if (variant === "secondary-light") {
         combinedStyle.borderColor = "#002e6b";
         combinedStyle.color = "#ffffff";
+      } else if (variant === "ghost") {
+        combinedStyle.borderColor = "transparent";
+        combinedStyle.color = "#001a43";
       } else {
         combinedStyle.borderColor = "#7ba4ff";
         combinedStyle.color = "#001a43";
