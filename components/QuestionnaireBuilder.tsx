@@ -187,10 +187,15 @@ function QuestionCard({
     <div
       ref={innerRef}
       {...draggableProps}
-      className={`relative bg-[#0f0f0f] border border-white/10 rounded-xl transition-all duration-300 max-w-3xl mx-auto w-full ${
-        isDragging ? "border-[var(--color-primary)]/50 shadow-2xl scale-[1.01] z-50" : "shadow-md hover:border-white/20"
-      }`}
+      className={`relative max-w-3xl mx-auto w-full ${isDragging ? "z-[999]" : ""}`}
     >
+      <div
+        className={`w-full rounded-xl transition-all duration-300 ${
+          isDragging 
+            ? "bg-[#121214] border border-[var(--color-primary)] shadow-[0_15px_35px_rgba(0,0,0,0.8),0_0_15px_rgba(123,164,255,0.15)] scale-[1.02]" 
+            : "bg-[#0f0f0f] border border-white/10 shadow-md hover:border-white/20"
+        }`}
+      >
       <style>{`
         @keyframes dropdownReveal {
           from {
@@ -325,32 +330,46 @@ function QuestionCard({
           }
         }
       `}</style>
-      {/* Drag handle block at the top */}
+      {/* Drag Header / Handle */}
       <div 
         {...(dragHandleProps ?? {})}
-        className="w-full flex justify-center py-2 cursor-grab active:cursor-grabbing rounded-t-xl hover:bg-white/5 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2 bg-white/[0.01] hover:bg-white/[0.03] active:bg-[var(--color-primary)]/10 border-b border-white/5 transition-colors group/drag cursor-grab active:cursor-grabbing rounded-t-xl"
         title="Drag to reorder"
       >
-        <span className="material-symbols-outlined text-[18px] text-white/20 select-none">
-          drag_indicator
-        </span>
+        {/* Left: Spacer to center grip */}
+        <div className="w-6 h-6 flex items-center justify-center select-none" aria-hidden="true" />
+
+        {/* Center: Grip Icon */}
+        <div className="flex items-center gap-0.5 text-white/20 group-hover/drag:text-[var(--color-primary)]/70 transition-colors">
+          <span className="material-symbols-outlined text-[20px] select-none">
+            drag_indicator
+          </span>
+        </div>
+
+        {/* Right: Spacer to center grip */}
+        <div className="w-6 h-6 flex items-center justify-center select-none" aria-hidden="true" />
       </div>
 
       <div className="flex flex-col gap-6 premium-card-content">
         {/* Top Row: Question Input */}
         <div className="w-full">
-          <input
-            type="text"
-            value={question.question_text}
-            onChange={(e) => onChange({ ...question, question_text: e.target.value })}
-            disabled={disabled}
-            placeholder="Question title"
-            className="bg-[#1a1a1a] border-b-2 border-white/10 hover:border-white/30 text-[var(--color-text-primary)] font-body-lg text-lg focus:outline-none focus:border-[var(--color-primary)] transition-all rounded-t-md placeholder:text-white/30 mobile-input-offset desktop-input-offset"
-            style={{ 
-              padding: '12px 16px', 
-              minHeight: '56px',
-            }}
-          />
+          <div className="flex items-center gap-3 mobile-input-offset desktop-input-offset">
+            <span className="text-lg font-bold text-[var(--color-primary)] select-none font-mono min-w-[28px] text-right">
+              {index + 1}.
+            </span>
+            <input
+              type="text"
+              value={question.question_text}
+              onChange={(e) => onChange({ ...question, question_text: e.target.value })}
+              disabled={disabled}
+              placeholder="Question title"
+              className="flex-grow bg-[#1a1a1a] border-b-2 border-white/10 hover:border-white/30 text-[var(--color-text-primary)] font-body-lg text-lg focus:outline-none focus:border-[var(--color-primary)] transition-all rounded-t-md placeholder:text-white/30 w-full"
+              style={{ 
+                padding: '12px 16px', 
+                minHeight: '56px',
+              }}
+            />
+          </div>
         </div>
 
         {/* Second Row: Options and Right Controls */}
@@ -515,6 +534,7 @@ function QuestionCard({
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
@@ -1056,7 +1076,9 @@ export function QuestionnaireBuilder({
             </AIButton>
           </div>
         </Card>
+      </div>
 
+      <div className="pt-6">
         {/* Validation error */}
         {saveError && (
           <div
