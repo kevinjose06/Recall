@@ -106,9 +106,10 @@ export default function LoginPage() {
             style={{ display: "flex", flexDirection: "column", gap: "20px" }}
           >
             <Input
-              label="Association email"
+              label="Username"
               type="email"
               id="login-email"
+              placeholder="association email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"

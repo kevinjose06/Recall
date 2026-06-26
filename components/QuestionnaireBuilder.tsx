@@ -192,7 +192,7 @@ function QuestionCard({
       <div
         className={`w-full rounded-xl transition-all duration-300 ${
           isDragging 
-            ? "bg-[#121214] border border-[var(--color-primary)] shadow-[0_15px_35px_rgba(0,0,0,0.8),0_0_15px_rgba(123,164,255,0.15)] scale-[1.02]" 
+            ? "bg-[#121214] border border-[var(--color-primary)] shadow-[0_15px_35px_rgba(0,0,0,0.8),0_0_15px_rgba(123,164,255,0.15)]" 
             : "bg-[#0f0f0f] border border-white/10 shadow-md hover:border-white/20"
         }`}
       >
@@ -335,6 +335,7 @@ function QuestionCard({
         {...(dragHandleProps ?? {})}
         className="w-full flex items-center justify-between px-4 py-2 bg-white/[0.01] hover:bg-white/[0.03] active:bg-[var(--color-primary)]/10 border-b border-white/5 transition-colors group/drag cursor-grab active:cursor-grabbing rounded-t-xl"
         title="Drag to reorder"
+        style={{ touchAction: 'none' }}
       >
         {/* Left: Spacer to center grip */}
         <div className="w-6 h-6 flex items-center justify-center select-none" aria-hidden="true" />
@@ -353,20 +354,26 @@ function QuestionCard({
       <div className="flex flex-col gap-6 premium-card-content">
         {/* Top Row: Question Input */}
         <div className="w-full">
-          <div className="flex items-center gap-3 mobile-input-offset desktop-input-offset">
-            <span className="text-lg font-bold text-[var(--color-primary)] select-none font-mono min-w-[28px] text-right">
+          <div className="flex items-start gap-3 mobile-input-offset desktop-input-offset">
+            <span className="text-lg font-bold text-[var(--color-primary)] select-none font-mono min-w-[28px] text-right mt-3">
               {index + 1}.
             </span>
-            <input
-              type="text"
+            <textarea
               value={question.question_text}
-              onChange={(e) => onChange({ ...question, question_text: e.target.value })}
+              onChange={(e) => {
+                onChange({ ...question, question_text: e.target.value });
+                // auto-resize
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
               disabled={disabled}
               placeholder="Question title"
-              className="flex-grow bg-[#1a1a1a] border-b-2 border-white/10 hover:border-white/30 text-[var(--color-text-primary)] font-body-lg text-lg focus:outline-none focus:border-[var(--color-primary)] transition-all rounded-t-md placeholder:text-white/30 w-full"
+              rows={1}
+              className="flex-grow bg-[#1a1a1a] border-b-2 border-white/10 hover:border-white/30 text-[var(--color-text-primary)] font-body-lg text-lg focus:outline-none focus:border-[var(--color-primary)] transition-all rounded-t-md placeholder:text-white/30 w-full resize-none overflow-hidden"
               style={{ 
                 padding: '12px 16px', 
                 minHeight: '56px',
+                lineHeight: '1.5',
               }}
             />
           </div>
@@ -840,20 +847,33 @@ export function QuestionnaireBuilder({
         /* Responsive controls bar overrides for mobile only */
         @media (max-width: 767px) {
           .responsive-navbar {
-            top: 12px !important;
-            width: 94% !important;
+            top: 8px !important;
+            width: calc(100vw - 24px) !important;
             max-width: 440px !important;
-            height: 56px !important;
-            min-height: 56px !important;
-            padding: 0 14px !important;
-            gap: 12px !important;
-            justify-content: space-between !important;
+            height: auto !important;
+            min-height: unset !important;
+            padding: 8px 12px !important;
+            gap: 6px !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            border-radius: 18px !important;
+          }
+          .responsive-navbar > div:first-child {
+            justify-content: center !important;
+            flex-wrap: wrap !important;
+            gap: 6px !important;
+          }
+          .responsive-navbar > div:last-child {
+            justify-content: center !important;
+            flex-wrap: wrap !important;
           }
           .responsive-navbar-options {
-            gap: 8px !important;
+            gap: 6px !important;
+            flex-wrap: wrap !important;
+            justify-content: center !important;
           }
           .responsive-navbar-count {
-            font-size: 0.85rem !important;
+            font-size: 0.82rem !important;
             white-space: nowrap !important;
           }
           .responsive-navbar-count > span:nth-of-type(2) {
@@ -865,13 +885,13 @@ export function QuestionnaireBuilder({
           }
           .responsive-button-text {
             display: inline-block !important;
-            font-size: 0.75rem !important;
+            font-size: 0.72rem !important;
             font-weight: 600 !important;
           }
           .responsive-button-padding {
             padding: 0 10px !important;
             width: auto !important;
-            height: 36px !important;
+            height: 34px !important;
             min-width: unset !important;
             justify-content: center !important;
             gap: 4px !important;
@@ -885,6 +905,12 @@ export function QuestionnaireBuilder({
           }
           .responsive-navbar-divider button span {
             font-size: 18px !important;
+          }
+          /* Unsaved warning text - allow wrapping */
+          .responsive-navbar [title] {
+            white-space: normal !important;
+            text-align: center !important;
+            max-width: 200px !important;
           }
         }
         @keyframes spin {
