@@ -23,7 +23,7 @@ export default async function BuilderPage({ params }: PageProps) {
 
   if (!event) notFound();
 
-  const isLocked = responseCount > 0;
+  const isLocked = false;
 
   return (
     <div className="page-container pb-32">

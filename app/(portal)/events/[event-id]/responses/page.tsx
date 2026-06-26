@@ -625,7 +625,7 @@ export default async function ResponsesPage({ params, searchParams }: PageProps)
                   <header className={styles.questionHeader}>
                     <div className={styles.questionMetaRow}>
                       <span className={styles.questionMeta}>
-                        Q{idx + 1} â€¢ Star Rating
+                        Q{idx + 1} • Star Rating
                       </span>
                       <span className={styles.questionHint}>
                         Average {average.toFixed(1)} / 5
