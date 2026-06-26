@@ -604,6 +604,41 @@ export function QuestionnaireBuilder({
 
   const [isAIModalOpen, setIsAIModalOpen] = React.useState(false);
 
+  // ── Scroll-aware navbar visibility ────────────────────────────
+  const [navbarVisible, setNavbarVisible] = React.useState(true);
+  const lastScrollY = React.useRef(0);
+  const scrollTicking = React.useRef(false);
+
+  React.useEffect(() => {
+    function onScroll() {
+      if (scrollTicking.current) return;
+      scrollTicking.current = true;
+      requestAnimationFrame(() => {
+        // Try portal-main first (bounded scroll), fall back to window
+        const scrollEl = document.getElementById("main-content");
+        const currentY = (scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight)
+          ? scrollEl.scrollTop
+          : window.scrollY;
+        const delta = currentY - lastScrollY.current;
+        if (Math.abs(delta) > 4) {
+          setNavbarVisible(delta < 0 || currentY < 60);
+          lastScrollY.current = currentY;
+        }
+        scrollTicking.current = false;
+      });
+    }
+
+    // Attach to both so we catch whichever one actually scrolls
+    window.addEventListener("scroll", onScroll, { passive: true });
+    const el = document.getElementById("main-content");
+    el?.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      el?.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
   // Long-press tooltip state & references
   const touchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const didLongPressRef = React.useRef(false);
@@ -844,19 +879,30 @@ export function QuestionnaireBuilder({
   return (
     <div>
       <style>{`
+        /* Scroll-aware navbar transition */
+        .responsive-navbar {
+          transition: top     0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                      opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .responsive-navbar--hidden {
+          top: -140px !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+        }
+
         /* Responsive controls bar overrides for mobile only */
         @media (max-width: 767px) {
           .responsive-navbar {
-            top: 8px !important;
-            width: calc(100vw - 24px) !important;
-            max-width: 440px !important;
+            top: 10px !important;
+            width: calc(100vw - 20px) !important;
+            max-width: 460px !important;
             height: auto !important;
             min-height: unset !important;
-            padding: 8px 12px !important;
-            gap: 6px !important;
+            padding: 10px 14px !important;
+            gap: 8px !important;
             flex-direction: column !important;
             align-items: stretch !important;
-            border-radius: 18px !important;
+            border-radius: 20px !important;
           }
           .responsive-navbar > div:first-child {
             justify-content: center !important;
@@ -868,12 +914,12 @@ export function QuestionnaireBuilder({
             flex-wrap: wrap !important;
           }
           .responsive-navbar-options {
-            gap: 6px !important;
+            gap: 8px !important;
             flex-wrap: wrap !important;
             justify-content: center !important;
           }
           .responsive-navbar-count {
-            font-size: 0.82rem !important;
+            font-size: 0.88rem !important;
             white-space: nowrap !important;
           }
           .responsive-navbar-count > span:nth-of-type(2) {
@@ -885,32 +931,31 @@ export function QuestionnaireBuilder({
           }
           .responsive-button-text {
             display: inline-block !important;
-            font-size: 0.72rem !important;
+            font-size: 0.75rem !important;
             font-weight: 600 !important;
           }
           .responsive-button-padding {
-            padding: 0 10px !important;
+            padding: 0 12px !important;
             width: auto !important;
-            height: 34px !important;
+            height: 38px !important;
             min-width: unset !important;
             justify-content: center !important;
-            gap: 4px !important;
+            gap: 5px !important;
           }
           .responsive-button-padding > span:nth-of-type(2) {
             display: inline-flex !important;
           }
-          /* Make undo/redo buttons a bit smaller/more compact on mobile */
           .responsive-navbar-divider button {
-            padding: 4px !important;
+            padding: 5px !important;
           }
           .responsive-navbar-divider button span {
-            font-size: 18px !important;
+            font-size: 20px !important;
           }
           /* Unsaved warning text - allow wrapping */
           .responsive-navbar [title] {
             white-space: normal !important;
             text-align: center !important;
-            max-width: 200px !important;
+            max-width: 220px !important;
           }
         }
         @keyframes spin {
@@ -930,11 +975,11 @@ export function QuestionnaireBuilder({
 
       {/* Fixed Navbar Controls */}
       <div 
-        className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center justify-center gap-8 bg-[#141414]/95 border border-white/10 rounded-full backdrop-blur-md shadow-2xl w-max responsive-navbar"
-        style={{ minHeight: '72px', padding: '0 48px' }}
+        className={`fixed z-[100] flex items-center justify-center gap-8 bg-[#141414]/95 border border-white/10 rounded-full backdrop-blur-md shadow-2xl w-max responsive-navbar${navbarVisible ? '' : ' responsive-navbar--hidden'}`}
+        style={{ minHeight: '82px', padding: '0 56px', top: '24px', left: '50%', transform: 'translateX(-50%)' }}
       >
         <div className="flex items-center gap-4">
-          <span className="text-[1.05rem] font-semibold text-white tracking-wide responsive-navbar-count">
+          <span className="text-[1.15rem] font-semibold text-white tracking-wide responsive-navbar-count">
             {questions.length} <span className="responsive-button-text">Question{questions.length !== 1 ? "s" : ""}</span><span className="md:hidden">Q{questions.length !== 1 ? "s" : ""}</span>
           </span>
           {saveStatus === "saving" && (
