@@ -109,7 +109,7 @@ export default function LoginPage() {
               label="Username"
               type="email"
               id="login-email"
-              placeholder="association email"
+              placeholder="Association Mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
