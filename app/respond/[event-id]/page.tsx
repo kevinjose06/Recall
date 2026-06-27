@@ -45,10 +45,8 @@ function formatEventDates(startStr: string, endStr: string) {
 export default async function RespondPage(props: PageProps) {
   const { "event-id": eventId } = await props.params;
   const searchParams = props.searchParams ? await props.searchParams : {};
-  
   const cookieStore = await cookies();
   const isAdmin = cookieStore.has("__session");
-  const isPreview = searchParams.preview === "true" || isAdmin;
 
   const [event, questions] = await Promise.all([
     getEventAdmin(eventId),
@@ -58,6 +56,7 @@ export default async function RespondPage(props: PageProps) {
   if (!event) notFound();
 
   const isPublished = Boolean(event.is_published);
+  const isPreview = searchParams.preview === "true" || (isAdmin && !isPublished);
 
   if (!isPublished && !isPreview) {
     return (
