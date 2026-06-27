@@ -3,13 +3,36 @@ import { db } from "./firebase";
 import type { Event, Question } from "./types";
 
 export async function createEvent(eventData: Omit<Event, "id" | "created_at">) {
+  const batch = writeBatch(db);
   const newEventRef = doc(collection(db, "events"));
   const created_at = new Date().toISOString();
   
-  await setDoc(newEventRef, {
+  batch.set(newEventRef, {
     ...eventData,
     created_at,
   });
+
+  const defaultQuestions = [
+    { question_text: "Name", question_type: "short_text", is_required: true },
+    { question_text: "Email", question_type: "short_text", is_required: true },
+    { question_text: "College Name", question_type: "short_text", is_required: true }
+  ];
+
+  const questionsRef = collection(db, "events", newEventRef.id, "questions");
+  
+  defaultQuestions.forEach((q, i) => {
+    const qRef = doc(questionsRef);
+    batch.set(qRef, {
+      event_id: newEventRef.id,
+      question_text: q.question_text,
+      question_type: q.question_type,
+      options: null,
+      order_index: i,
+      is_required: q.is_required
+    });
+  });
+
+  await batch.commit();
 
   return newEventRef.id;
 }

@@ -7,13 +7,15 @@ import type { Question } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import { cookies } from "next/headers";
 
 interface PageProps {
   params: Promise<{ "event-id": string }>;
+  searchParams?: Promise<{ preview?: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { "event-id": eventId } = await params;
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+  const { "event-id": eventId } = await props.params;
   const event = await getEventAdmin(eventId);
   return {
     title: event?.title ? `Feedback — ${event.title}` : "Event Feedback",
@@ -40,8 +42,13 @@ function formatEventDates(startStr: string, endStr: string) {
   return `${startFormatted} - ${formatDate(endStr)}, ${start.getFullYear()}`;
 }
 
-export default async function RespondPage({ params }: PageProps) {
-  const { "event-id": eventId } = await params;
+export default async function RespondPage(props: PageProps) {
+  const { "event-id": eventId } = await props.params;
+  const searchParams = props.searchParams ? await props.searchParams : {};
+  
+  const cookieStore = await cookies();
+  const isAdmin = cookieStore.has("__session");
+  const isPreview = searchParams.preview === "true" || isAdmin;
 
   const [event, questions] = await Promise.all([
     getEventAdmin(eventId),
@@ -52,7 +59,7 @@ export default async function RespondPage({ params }: PageProps) {
 
   const isPublished = Boolean(event.is_published);
 
-  if (!isPublished) {
+  if (!isPublished && !isPreview) {
     return (
       <div className="min-h-screen w-full bg-transparent text-[var(--color-text-primary)] relative overflow-x-hidden flex flex-col items-center">
         {/* Top Header Bar matching the Builder/Admin styling */}
@@ -132,6 +139,12 @@ export default async function RespondPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen w-full bg-transparent text-[var(--color-text-primary)] relative overflow-x-hidden flex flex-col items-center">
+      {isPreview && (
+        <div className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-2 px-4 text-center text-sm font-medium z-[200] flex items-center justify-center gap-2 sticky top-0 shadow-md">
+          <span className="material-symbols-outlined text-[18px]">visibility</span>
+          <span>Preview Mode — Responses will not be saved.</span>
+        </div>
+      )}
       {/* Top Header Bar matching the Builder/Admin styling */}
       <header
         style={{

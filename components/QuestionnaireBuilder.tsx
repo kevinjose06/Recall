@@ -1058,7 +1058,7 @@ export function QuestionnaireBuilder({
           </div>
 
           <Link 
-            href={`/respond/${eventId}`} 
+            href={`/respond/${eventId}?preview=true`} 
             target="_blank"
             onClick={(e) => {
               if (didLongPressRef.current) {
