@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/Button";
 import type { Question, Response } from "@/lib/types";
 import styles from "./responses.module.css";
@@ -134,6 +133,7 @@ export function ResponsesToolbar({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = React.useTransition();
 
   function handleDownloadExcel() {
     // Build CSV Headers
@@ -210,76 +210,96 @@ export function ResponsesToolbar({
     }
 
     const query = params.toString();
-    router.push(query ? `${pathname}?${query}` : pathname);
+    startTransition(() => {
+      router.push(query ? `${pathname}?${query}` : pathname);
+    });
   }
 
 
 
   return (
-    <div className={styles.toolbarContainer}>
-      <Link href={`/events/${eventId}`} className={styles.backLink}>
-        <Button
-          type="button"
-          variant="secondary-light"
-          size="sm"
-          leftIcon={<span className="material-symbols-outlined text-sm">arrow_back</span>}
-        >
-          {eventTitle}
-        </Button>
-      </Link>
+    <div style={{ position: "relative" }}>
+      {/* Pending transition indicator */}
+      {isPending && (
+        <div style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "2px",
+          background: "linear-gradient(90deg, transparent, var(--color-primary), transparent)",
+          backgroundSize: "200% 100%",
+          animation: "shine-skeleton 1.2s ease-in-out infinite",
+          borderRadius: "9999px",
+          zIndex: 10,
+        }} />
+      )}
+      <div className={styles.toolbarContainer} style={{ opacity: isPending ? 0.7 : 1, transition: "opacity 0.2s ease" }}>
+        <Link href={`/events/${eventId}`} className={styles.backLink}>
+          <Button
+            type="button"
+            variant="secondary-light"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-sm">arrow_back</span>}
+          >
+            {eventTitle}
+          </Button>
+        </Link>
 
-      <div className={styles.toolbarFields}>
-        <CustomDropdown
-          label="View mode"
-          variant="primary"
-          value={mode}
-          options={[
-            { value: "summary", label: "Summary" },
-            { value: "question", label: "Question" },
-            { value: "individual", label: "Individual" },
-          ]}
-          onChange={(val) => updateViewParams({ mode: val as ViewMode })}
-        />
-
-        {mode === "question" && (
+        <div className={styles.toolbarFields}>
           <CustomDropdown
-            label="Question"
-            value={selectedQuestionId}
-            options={questions.map((question, index) => ({
-              value: question.id,
-              label: `Q${index + 1}: ${question.question_text}`,
-            }))}
-            onChange={(val) => updateViewParams({ mode: "question", questionId: val })}
-            disabled={questions.length === 0}
-            align="right"
+            label="View mode"
+            variant="primary"
+            value={mode}
+            options={[
+              { value: "summary", label: isPending ? "Loading…" : "Summary" },
+              { value: "question", label: "Question" },
+              { value: "individual", label: "Individual" },
+            ]}
+            onChange={(val) => updateViewParams({ mode: val as ViewMode })}
+            disabled={isPending}
           />
-        )}
 
-        {mode === "individual" && (
-          <CustomDropdown
-            label="Respondent"
-            value={selectedResponseId}
-            options={responseOptions.map((response) => ({
-              value: response.id,
-              label: response.label,
-            }))}
-            onChange={(val) => updateViewParams({ mode: "individual", responseId: val })}
-            disabled={responseOptions.length === 0}
-            align="right"
-          />
-        )}
-      </div>
+          {mode === "question" && (
+            <CustomDropdown
+              label="Question"
+              value={selectedQuestionId}
+              options={questions.map((question, index) => ({
+                value: question.id,
+                label: `Q${index + 1}: ${question.question_text}`,
+              }))}
+              onChange={(val) => updateViewParams({ mode: "question", questionId: val })}
+              disabled={questions.length === 0 || isPending}
+              align="right"
+            />
+          )}
 
-      <div className={styles.toolbarActions}>
-        <Button
-          type="button"
-          variant="secondary-light"
-          size="sm"
-          onClick={handleDownloadExcel}
-          leftIcon={<span className="material-symbols-outlined text-sm">table_view</span>}
-        >
-          Save as Excel
-        </Button>
+          {mode === "individual" && (
+            <CustomDropdown
+              label="Respondent"
+              value={selectedResponseId}
+              options={responseOptions.map((response) => ({
+                value: response.id,
+                label: response.label,
+              }))}
+              onChange={(val) => updateViewParams({ mode: "individual", responseId: val })}
+              disabled={responseOptions.length === 0 || isPending}
+              align="right"
+            />
+          )}
+        </div>
+
+        <div className={styles.toolbarActions}>
+          <Button
+            type="button"
+            variant="secondary-light"
+            size="sm"
+            onClick={handleDownloadExcel}
+            leftIcon={<span className="material-symbols-outlined text-sm">table_view</span>}
+          >
+            Save as Excel
+          </Button>
+        </div>
       </div>
     </div>
   );

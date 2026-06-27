@@ -333,22 +333,19 @@ function QuestionCard({
       {/* Drag Header / Handle */}
       <div 
         {...(dragHandleProps ?? {})}
-        className="w-full flex items-center justify-between px-4 py-2 bg-white/[0.01] hover:bg-white/[0.03] active:bg-[var(--color-primary)]/10 border-b border-white/5 transition-colors group/drag cursor-grab active:cursor-grabbing rounded-t-xl"
+        className="mobile-drag-handle w-full flex items-center justify-center px-4 py-3 bg-white/[0.01] hover:bg-white/[0.03] active:bg-[var(--color-primary)]/10 border-b border-white/5 transition-colors group/drag cursor-grab active:cursor-grabbing rounded-t-xl"
         title="Drag to reorder"
-        style={{ touchAction: 'none' }}
+        style={{ touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
       >
-        {/* Left: Spacer to center grip */}
-        <div className="w-6 h-6 flex items-center justify-center select-none" aria-hidden="true" />
-
-        {/* Center: Grip Icon */}
-        <div className="flex items-center gap-0.5 text-white/20 group-hover/drag:text-[var(--color-primary)]/70 transition-colors">
+        {/* Center: Grip Icon + label */}
+        <div className="flex items-center gap-2 text-white/20 group-hover/drag:text-[var(--color-primary)]/70 transition-colors">
           <span className="material-symbols-outlined text-[20px] select-none">
             drag_indicator
           </span>
+          <span className="text-[11px] font-medium tracking-wider uppercase opacity-0 group-hover/drag:opacity-60 transition-opacity hidden md:inline">
+            drag to reorder
+          </span>
         </div>
-
-        {/* Right: Spacer to center grip */}
-        <div className="w-6 h-6 flex items-center justify-center select-none" aria-hidden="true" />
       </div>
 
       <div className="flex flex-col gap-6 premium-card-content">
@@ -604,10 +601,12 @@ export function QuestionnaireBuilder({
 
   const [isAIModalOpen, setIsAIModalOpen] = React.useState(false);
 
-  // ── Scroll-aware navbar visibility ────────────────────────────
+  // Scroll-aware navbar visibility
   const [navbarVisible, setNavbarVisible] = React.useState(true);
   const lastScrollY = React.useRef(0);
   const scrollTicking = React.useRef(false);
+  const navbarRef = React.useRef<HTMLDivElement>(null);
+  const [navbarHeight, setNavbarHeight] = React.useState(6); // fallback: (106 navbar bottom) - (72+32 content start) + 4px gap
 
   React.useEffect(() => {
     function onScroll() {
@@ -628,6 +627,21 @@ export function QuestionnaireBuilder({
       });
     }
 
+    // Measure navbar height after initial render and on resize
+    function measureNavbar() {
+      if (navbarRef.current) {
+        const navbarBottom = navbarRef.current.getBoundingClientRect().bottom;
+        // Get the top of the outer wrapper (the QuestionnaireBuilder's root div)
+        // so we know where page content actually starts in viewport coords
+        const containerTop = navbarRef.current.parentElement?.getBoundingClientRect().top ?? 0;
+        // Offset needed = (navbar bottom - container top) + 4px visible gap
+        setNavbarHeight(Math.max(0, navbarBottom - containerTop + 4));
+      }
+    }
+    measureNavbar();
+    const resizeObserver = new ResizeObserver(measureNavbar);
+    if (navbarRef.current) resizeObserver.observe(navbarRef.current);
+
     // Attach to both so we catch whichever one actually scrolls
     window.addEventListener("scroll", onScroll, { passive: true });
     const el = document.getElementById("main-content");
@@ -636,6 +650,7 @@ export function QuestionnaireBuilder({
     return () => {
       window.removeEventListener("scroll", onScroll);
       el?.removeEventListener("scroll", onScroll);
+      resizeObserver.disconnect();
     };
   }, []);
 
@@ -957,6 +972,20 @@ export function QuestionnaireBuilder({
             text-align: center !important;
             max-width: 220px !important;
           }
+          /* Mobile drag handle: pill indicator + taller touch target */
+          .mobile-drag-handle {
+            min-height: 44px !important;
+            background: rgba(255, 255, 255, 0.02) !important;
+          }
+          .mobile-drag-handle::after {
+            content: '';
+            display: block;
+            width: 36px;
+            height: 4px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.18);
+            margin: 0 auto;
+          }
         }
         @keyframes spin {
           to { transform: rotate(360deg); }
@@ -975,6 +1004,7 @@ export function QuestionnaireBuilder({
 
       {/* Fixed Navbar Controls */}
       <div 
+        ref={navbarRef}
         className={`fixed z-[100] flex items-center justify-center gap-8 bg-[#141414]/95 border border-white/10 rounded-full backdrop-blur-md shadow-2xl w-max responsive-navbar${navbarVisible ? '' : ' responsive-navbar--hidden'}`}
         style={{ minHeight: '82px', padding: '0 56px', top: '24px', left: '50%', transform: 'translateX(-50%)' }}
       >
@@ -1113,7 +1143,7 @@ export function QuestionnaireBuilder({
         </div>
       </div>
 
-      <div className="animate-fade-slide-up pt-32">
+      <div className="animate-fade-slide-up" style={{ paddingTop: `${navbarHeight}px` }}>
         {/* Banner Section with Breadcrumb */}
         <Card padding="lg" className="max-w-4xl mx-auto w-full" style={{ marginBottom: '24px' }}>
           <div className="flex items-center gap-2 text-[var(--color-text-secondary)] font-label-caps text-label-caps mb-4">
@@ -1162,7 +1192,19 @@ export function QuestionnaireBuilder({
         )}
 
         {/* Questions list */}
-        <DragDropContext onDragEnd={onDragEnd}>
+        <DragDropContext
+          onDragEnd={onDragEnd}
+          autoScrollerOptions={{
+            startFromPercentage: 0.25,
+            maxScrollAtPercentage: 0.05,
+            maxPixelScroll: 28,
+            ease: (percentage: number) => Math.pow(percentage, 2),
+            durationDampening: {
+              stopDampeningAt: 1200,
+              accelerateAt: 360,
+            },
+          }}
+        >
           <Droppable droppableId="questions">
             {(provided) => (
               <div

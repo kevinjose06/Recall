@@ -3,9 +3,18 @@ import { Button } from "@/components/ui/Button";
 
 export default function ResponsesLoading() {
   return (
-    <div className="page-container animate-fade-slide-up">
-      {/* Header Context Skeleton */}
-      <div style={{ marginBottom: "24px" }}>
+    <div className="page-container">
+      {/* Toolbar Skeleton — matches ResponsesToolbar layout */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "16px",
+        width: "100%",
+        marginBottom: "24px",
+        flexWrap: "wrap",
+      }}>
+        {/* Back button skeleton */}
         <Button
           variant="secondary-light"
           size="sm"
@@ -14,6 +23,14 @@ export default function ResponsesLoading() {
         >
           <div className="skeleton" style={{ width: "100px", height: "14px", borderRadius: "var(--radius-sm)" }} />
         </Button>
+
+        {/* View mode dropdown skeleton */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginLeft: "auto" }}>
+          <div className="skeleton" style={{ width: "148px", height: "40px", borderRadius: "9999px" }} />
+        </div>
+
+        {/* Download button skeleton */}
+        <div className="skeleton" style={{ width: "120px", height: "36px", borderRadius: "9999px" }} />
       </div>
       
       <Card padding="lg" style={{ marginBottom: "24px" }}>
