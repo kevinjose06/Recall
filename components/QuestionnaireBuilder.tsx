@@ -631,11 +631,21 @@ export function QuestionnaireBuilder({
     function measureNavbar() {
       if (navbarRef.current) {
         const navbarBottom = navbarRef.current.getBoundingClientRect().bottom;
-        // Get the top of the outer wrapper (the QuestionnaireBuilder's root div)
-        // so we know where page content actually starts in viewport coords
-        const containerTop = navbarRef.current.parentElement?.getBoundingClientRect().top ?? 0;
-        // Offset needed = (navbar bottom - container top) + 4px visible gap
-        setNavbarHeight(Math.max(0, navbarBottom - containerTop + 4));
+        
+        // Find the scroll container and get its current scroll position
+        const scrollEl = document.getElementById("main-content");
+        const scrollTop = (scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight)
+          ? scrollEl.scrollTop
+          : window.scrollY;
+
+        const parentEl = navbarRef.current.parentElement;
+        if (parentEl) {
+          const parentRect = parentEl.getBoundingClientRect();
+          // Calculate the container's top position relative to the scroll container (scroll-independent)
+          const containerTop = parentRect.top + scrollTop;
+          // Offset needed = (navbar bottom - scroll-independent container top) + 8px visible gap
+          setNavbarHeight(Math.max(0, navbarBottom - containerTop + 8));
+        }
       }
     }
     measureNavbar();

@@ -463,18 +463,24 @@ export function ParticipantForm({
                         );
                       })}
 
-                    {/* Short text — custom textarea input */}
+                    {/* Short text — custom textarea input (auto-expanding line) */}
                     {question.question_type === "short_text" && (
                       <textarea
                         value={(answers[question.id] as string) ?? ""}
                         onChange={(e) => setSingleAnswer(question.id, e.target.value)}
-                        rows={4}
-                        placeholder="Your response…"
-                        className={`w-full bg-[#050505] border text-[var(--color-text-primary)] rounded-lg p-3.5 font-body-sm text-sm focus:outline-none transition-all ${
+                        onInput={(e) => {
+                          const target = e.currentTarget;
+                          target.style.height = "auto";
+                          target.style.height = `${target.scrollHeight}px`;
+                        }}
+                        rows={1}
+                        placeholder="Your response"
+                        className={`w-full bg-transparent border-t-0 border-l-0 border-r-0 border-b border-white/30 hover:border-white/60 text-[var(--color-text-primary)] px-0 py-2 font-body-sm text-base !outline-none focus:!outline-none focus:!ring-0 focus:border-t-0 focus:border-l-0 focus:border-r-0 !shadow-none transition-colors resize-none overflow-hidden ${
                           hasError
-                            ? "border-[var(--color-error)]/30 focus:border-[var(--color-error)] focus:ring-4 focus:ring-[var(--color-error)]/10"
-                            : "border-white/8 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10"
+                            ? "border-[var(--color-error)] focus:border-b-[var(--color-error)]"
+                            : "focus:border-b-[var(--color-primary)]"
                         }`}
+                        style={{ minHeight: "40px" }}
                       />
                     )}
 
