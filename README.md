@@ -37,14 +37,15 @@ The current reliance on individual-led feedback loops (primarily Google Forms) i
 ## ✨ Key Features
 
 * **📅 Event Dashboard:** Unified dashboard listing all events (workshops, hackathons, bootcamps, etc.) sorted chronologically, displaying active status and total response counts.
-* **🛠️ Drag-and-Drop Questionnaire Builder:** Dynamic form builder supporting four question types: `single_choice` (radio), `mcq` (checkbox), `short_text` (textarea), and `star_rating`. Powered by `@hello-pangea/dnd` for smooth, touch-responsive reordering.
+* **🛠️ Drag-and-Drop Questionnaire Builder:** Dynamic form builder supporting four question types: `single_choice` (radio), `mcq` (checkbox), `short_text` (textarea), and `star_rating`. Powered by `@hello-pangea/dnd` with custom autoscroll easing, slower scroll-rate dampening, and dynamic touch handle pill indicators designed for optimized mobile reordering.
 * **🔒 Auto-Locking Safety:** The questionnaire builder automatically locks once an event receives its first response, preventing structural database mismatches.
 * **🛡️ Questionnaire Integrity Protection:** Leverages a custom hashing mechanism to generate a signature for each form state. Submissions are rejected if the participant's form state does not match the active server configuration.
-* **📊 Live Analytics & Visualization:** Interactive analytics using [Recharts](https://recharts.org/):
+* **📊 Live Analytics & Visualization:** Interactive analytics using [Recharts](https://recharts.org/) with optimized tab transitions using React 19 `useTransition` and a responsive toolbar loading shimmer state for instantaneous feedback.
   - **Single Choice:** Rendered as colorful Pie Charts.
   - **Multiple Choice (MCQ):** Visualized as Horizontal Bar Charts with multi-select labels.
   - **Star Ratings:** Averages and star distributions.
   - **Short Text:** Searchable, scrollable lists sorted by submission time.
+* **📐 Dynamic Viewport Layouts:** Utilizes a `ResizeObserver` dynamic offset tracker to calculate and adjust top padding in the questionnaire builder automatically, ensuring header title cards are fully visible under floating navigation bars across all device viewports.
 * **📥 Client-Side Excel/CSV Export:** Enables administrators to download event response data instantly. Generates clean, structured, and properly-escaped spreadsheet reports directly in the browser as a `.csv` file (fully compatible with Microsoft Excel and Google Sheets) containing respondent details, timestamps, and corresponding answers.
 * **🔑 Hybrid Cookie-Based Auth:** Combines client-side Firebase Auth with secure, server-side HTTP-Only session cookies verified by Next.js Middleware.
 * **🌀 Premium Visual Interface:** Built with a curated dark color palette, custom glassmorphism components, and a fluid 3D Three.js particle background (`PixelBlast`) that adds a premium feel.
