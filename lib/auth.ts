@@ -39,4 +39,3 @@ export async function reAuthAndChangePassword(currentPass: string, newPass: stri
 export async function sendPasswordReset(email: string) {
   await sendPasswordResetEmail(auth, email);
 }
-
