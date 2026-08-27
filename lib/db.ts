@@ -88,4 +88,3 @@ export async function updateEventPublishStatus(eventId: string, isPublished: boo
   const eventRef = doc(db, "events", eventId);
   await updateDoc(eventRef, { is_published: isPublished });
 }
-
