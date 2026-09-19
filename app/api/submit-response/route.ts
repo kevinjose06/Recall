@@ -38,10 +38,15 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const eventRef = adminDb.collection("events").doc(event_id);
+    let eventRef = adminDb.collection("events").doc(event_id);
 
     // ── Verify event exists ────────────────────────────────────
-    const eventSnap = await eventRef.get();
+    let eventSnap = await eventRef.get();
+    if (!eventSnap.exists) {
+      eventRef = adminDb.collection("demo_events").doc(event_id);
+      eventSnap = await eventRef.get();
+    }
+
     if (!eventSnap.exists) {
       return NextResponse.json({ error: "Event not found." }, { status: 400 });
     }

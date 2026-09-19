@@ -1,10 +1,16 @@
 import { collection, doc, setDoc, getDocs, orderBy, query, writeBatch, updateDoc } from "firebase/firestore";
-import { db } from "./firebase";
+import { db, auth } from "./firebase";
 import type { Event, Question } from "./types";
+
+export const DEMO_EMAIL = "user@gmail.com";
+
+export function getEventsCollectionName() {
+  return auth.currentUser?.email === DEMO_EMAIL ? "demo_events" : "events";
+}
 
 export async function createEvent(eventData: Omit<Event, "id" | "created_at">) {
   const batch = writeBatch(db);
-  const newEventRef = doc(collection(db, "events"));
+  const newEventRef = doc(collection(db, getEventsCollectionName()));
   const created_at = new Date().toISOString();
   
   batch.set(newEventRef, {
@@ -18,7 +24,7 @@ export async function createEvent(eventData: Omit<Event, "id" | "created_at">) {
     { question_text: "College Name", question_type: "short_text", is_required: true }
   ];
 
-  const questionsRef = collection(db, "events", newEventRef.id, "questions");
+  const questionsRef = collection(db, getEventsCollectionName(), newEventRef.id, "questions");
   
   defaultQuestions.forEach((q, i) => {
     const qRef = doc(questionsRef);
@@ -39,7 +45,7 @@ export async function createEvent(eventData: Omit<Event, "id" | "created_at">) {
 
 export async function saveQuestions(eventId: string, questions: Array<Omit<Question, "id"> & { id?: string }>) {
   const batch = writeBatch(db);
-  const questionsRef = collection(db, "events", eventId, "questions");
+  const questionsRef = collection(db, getEventsCollectionName(), eventId, "questions");
 
   // Fetch existing questions
   const existingSnapshot = await getDocs(questionsRef);
@@ -85,6 +91,6 @@ export async function saveQuestions(eventId: string, questions: Array<Omit<Quest
 }
 
 export async function updateEventPublishStatus(eventId: string, isPublished: boolean) {
-  const eventRef = doc(db, "events", eventId);
+  const eventRef = doc(db, getEventsCollectionName(), eventId);
   await updateDoc(eventRef, { is_published: isPublished });
 }

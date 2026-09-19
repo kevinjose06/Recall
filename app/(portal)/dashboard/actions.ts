@@ -12,14 +12,16 @@ export async function deleteEventAction(eventId: string) {
     throw new Error("Unauthorized: Missing session token.");
   }
 
+  let decoded;
   try {
-    await adminAuth.verifyIdToken(token);
+    decoded = await adminAuth.verifyIdToken(token);
   } catch (err) {
     throw new Error("Unauthorized: Invalid session token.");
   }
 
   try {
-    const eventRef = adminDb.collection("events").doc(eventId);
+    const collectionName = decoded.email === "user@gmail.com" ? "demo_events" : "events";
+    const eventRef = adminDb.collection(collectionName).doc(eventId);
     await adminDb.recursiveDelete(eventRef);
     revalidatePath("/dashboard");
     return { success: true };
