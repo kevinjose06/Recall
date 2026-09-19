@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getEventAdmin, getResponseCountAdmin } from "@/lib/db-admin";
+import { getEventAdmin, getResponseCountAdmin, getAdminEventsCollectionName } from "@/lib/db-admin";
 import { adminDb } from "@/lib/firebase-admin";
 import { EventTypeBadge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -50,7 +50,7 @@ export default async function EventDetailPage({ params }: PageProps) {
     getEventAdmin(eventId),
     getResponseCountAdmin(eventId),
     adminDb
-      .collection("events")
+      .collection(await getAdminEventsCollectionName())
       .doc(eventId)
       .collection("questions")
       .count()
